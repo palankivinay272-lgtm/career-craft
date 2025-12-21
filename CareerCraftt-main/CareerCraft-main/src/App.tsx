@@ -2,9 +2,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom"; // No BrowserRouter
 
 import Navigation from "./components/Navigation";
+import ProtectedRoute from "./components/ProtectedRoute"; 
+import Footer from "./components/Footer"; // ✅ Import Footer
 
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
@@ -15,7 +17,7 @@ import RoadmapDetail from "./pages/RoadmapDetail";
 import Profile from "./pages/Profile";
 import MockInterview from "./pages/MockInterview";
 import Placements from "./pages/Placements";
-import AdminPlacements from "./pages/Adminplacements"; // ✅ NEW
+import AdminPlacements from "./pages/Adminplacements";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
@@ -28,114 +30,117 @@ const App = () => (
       <Toaster />
       <Sonner />
 
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<Index />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+      {/* 🚀 Main Content */}
+      <div className="min-h-screen flex flex-col">
+        <div className="flex-grow">
+          <Routes>
+            {/* --- PUBLIC ROUTES --- */}
+            <Route path="/" element={<Index />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
 
-        {/* Dashboard */}
-        <Route
-          path="/dashboard"
-          element={
-            <>
-              <Navigation />
-              <Dashboard />
-            </>
-          }
-        />
+            {/* --- PROTECTED ROUTES --- */}
+            
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Navigation />
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
 
-        {/* Resume Analyzer */}
-        <Route
-          path="/analyzer"
-          element={
-            <>
-              <Navigation />
-              <ResumeAnalyzer />
-            </>
-          }
-        />
+            <Route
+              path="/analyzer"
+              element={
+                <ProtectedRoute>
+                  <Navigation />
+                  <ResumeAnalyzer />
+                </ProtectedRoute>
+              }
+            />
 
-        {/* Job Matches */}
-        <Route
-          path="/jobs"
-          element={
-            <>
-              <Navigation />
-              <JobMatches />
-            </>
-          }
-        />
+            <Route
+              path="/jobs"
+              element={
+                <ProtectedRoute>
+                  <Navigation />
+                  <JobMatches />
+                </ProtectedRoute>
+              }
+            />
 
-        {/* Placements */}
-        <Route
-          path="/placements"
-          element={
-            <>
-              <Navigation />
-              <Placements />
-            </>
-          }
-        />
+            <Route
+              path="/placements"
+              element={
+                <ProtectedRoute>
+                  <Navigation />
+                  <Placements />
+                </ProtectedRoute>
+              }
+            />
 
-        {/* ✅ ADMIN PLACEMENTS */}
-        <Route
-          path="/admin"
-          element={
-            <>
-              <Navigation />
-              <AdminPlacements />
-            </>
-          }
-        />
+            <Route
+              path="/roadmaps"
+              element={
+                <ProtectedRoute>
+                  <Navigation />
+                  <Roadmaps />
+                </ProtectedRoute>
+              }
+            />
 
-        {/* Roadmaps */}
-        <Route
-          path="/roadmaps"
-          element={
-            <>
-              <Navigation />
-              <Roadmaps />
-            </>
-          }
-        />
+            <Route
+              path="/roadmap/:id"
+              element={
+                <ProtectedRoute>
+                  <Navigation />
+                  <RoadmapDetail />
+                </ProtectedRoute>
+              }
+            />
 
-        {/* Roadmap Details */}
-        <Route
-          path="/roadmap/:id"
-          element={
-            <>
-              <Navigation />
-              <RoadmapDetail />
-            </>
-          }
-        />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Navigation />
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
 
-        {/* Profile */}
-        <Route
-          path="/profile"
-          element={
-            <>
-              <Navigation />
-              <Profile />
-            </>
-          }
-        />
+            <Route
+              path="/interview"
+              element={
+                <ProtectedRoute>
+                  <Navigation />
+                  <MockInterview />
+                </ProtectedRoute>
+              }
+            />
 
-        {/* Mock Interview */}
-        <Route
-          path="/interview"
-          element={
-            <>
-              <Navigation />
-              <MockInterview />
-            </>
-          }
-        />
+            {/* Admin Route */}
+            <Route
+              path="/admin"
+              element={
+                <>
+                  <Navigation />
+                  <AdminPlacements />
+                </>
+              }
+            />
 
-        {/* 404 */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+            {/* 404 */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </div>
+
+        {/* ✅ FOOTER ADDED HERE - Stays at bottom */}
+        <Footer />
+      </div>
+
     </TooltipProvider>
   </QueryClientProvider>
 );

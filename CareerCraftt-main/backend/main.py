@@ -66,9 +66,16 @@ class AdminPlacement(BaseModel):
 
 # ---------------- JOB DATA ----------------
 JOBS_DB = [
-    {"role": "Python Backend Developer", "company": "TechNova", "skills": "python django fastapi sql api"},
-    {"role": "Full Stack Developer", "company": "Webify", "skills": "react node python mongodb"},
-    {"role": "Data Analyst", "company": "DataWorks", "skills": "python sql pandas numpy"},
+    {"role": "Python Backend Developer", "company": "TechNova", "skills": "python django fastapi sql api", "location": "Remote", "salary": "$120k - $150k"},
+    {"role": "Full Stack Developer", "company": "Webify", "skills": "react node python mongodb typescript", "location": "San Francisco, CA", "salary": "$130k - $160k"},
+    {"role": "Data Analyst", "company": "DataWorks", "skills": "python sql pandas numpy tableau", "location": "New York, NY", "salary": "$90k - $115k"},
+    {"role": "React Frontend Engineer", "company": "Creative UI", "skills": "react javascript css tailwind redux", "location": "Austin, TX", "salary": "$110k - $140k"},
+    {"role": "DevOps Engineer", "company": "CloudScale", "skills": "aws docker kubernetes linux python", "location": "Remote", "salary": "$140k - $170k"},
+    {"role": "Machine Learning Engineer", "company": "AI Future", "skills": "python tensorflow pytorch scikit-learn", "location": "Boston, MA", "salary": "$150k - $190k"},
+    {"role": "Java Developer", "company": "Enterprise Sol", "skills": "java spring boot sql hibernate", "location": "Chicago, IL", "salary": "$115k - $135k"},
+    {"role": "Mobile App Developer", "company": "Appify", "skills": "react native flutter ios android", "location": "Los Angeles, CA", "salary": "$120k - $145k"},
+    {"role": "Cybersecurity Analyst", "company": "SecureNet", "skills": "network security linux python firewalls", "location": "Washington, DC", "salary": "$100k - $130k"},
+    {"role": "Product Manager", "company": "InnovateX", "skills": "agile jira product management communication", "location": "Seattle, WA", "salary": "$130k - $160k"},
 ]
 
 # ---------------- PLACEMENTS DATA (20 COLLEGES × 10 COMPANIES) ----------------

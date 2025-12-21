@@ -1,13 +1,78 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
-
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export default function Login() {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      /* ===============================
+         1️⃣ TRY ADMIN LOGIN FIRST
+      =============================== */
+      const adminRes = await fetch("http://127.0.0.1:8000/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: email, // admin uses email field
+          password: password,
+        }),
+      });
+
+      if (!adminRes.ok) {
+        throw new Error("Backend not reachable");
+      }
+
+      const adminData = await adminRes.json();
+
+      if (adminData.success) {
+        // ✅ ADMIN LOGIN
+        localStorage.setItem("isAdmin", "true");
+        toast.success("Admin login successful!");
+        navigate("/admin");
+        return;
+      }
+
+      /* ===============================
+         2️⃣ NORMAL USER LOGIN
+      =============================== */
+      const userRes = await fetch("http://127.0.0.1:8000/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const userData = await userRes.json();
+
+      if (userRes.ok && userData.success) {
+        localStorage.removeItem("isAdmin");
+        localStorage.setItem("user", userData.user);
+        localStorage.setItem("email", userData.email);
+
+        toast.success("Login successful!");
+        navigate("/dashboard");
+      } else {
+        toast.error(userData.message || "Invalid credentials");
+      }
+
+    } catch (error) {
+      console.error(error);
+      toast.error("Server error. Is the backend running?");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-[#1a0b2e] to-black relative overflow-hidden">
@@ -36,8 +101,9 @@ export default function Login() {
         {/* Email */}
         <input
           type="email"
-          placeholder="Email address"
+          placeholder="Email / Username"
           className="w-full mb-4 rounded-lg bg-black/60 border border-white/10 px-4 py-2 outline-none focus:border-purple-500"
+          value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
 
@@ -46,15 +112,17 @@ export default function Login() {
           type="password"
           placeholder="Password"
           className="w-full mb-6 rounded-lg bg-black/60 border border-white/10 px-4 py-2 outline-none focus:border-purple-500"
+          value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
 
         {/* Button */}
         <button
-          onClick={() => navigate("/dashboard")}
-          className="w-full py-2 rounded-lg bg-gradient-to-r from-purple-500 to-cyan-400 text-black font-semibold"
+          onClick={handleLogin}
+          disabled={loading}
+          className="w-full py-2 rounded-lg bg-gradient-to-r from-purple-500 to-cyan-400 text-black font-semibold hover:opacity-90 transition disabled:opacity-50"
         >
-          Login
+          {loading ? "Logging in..." : "Login"}
         </button>
 
         {/* Footer */}
@@ -64,6 +132,7 @@ export default function Login() {
             Sign up
           </Link>
         </p>
+
       </div>
     </div>
   );

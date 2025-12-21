@@ -14,6 +14,8 @@ import Roadmaps from "./pages/Roadmaps";
 import RoadmapDetail from "./pages/RoadmapDetail";
 import Profile from "./pages/Profile";
 import MockInterview from "./pages/MockInterview";
+import Placements from "./pages/Placements";
+import AdminPlacements from "./pages/Adminplacements"; // ✅ NEW
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
@@ -65,7 +67,29 @@ const App = () => (
           }
         />
 
-        {/* ✅ ROADMAPS PAGE */}
+        {/* Placements */}
+        <Route
+          path="/placements"
+          element={
+            <>
+              <Navigation />
+              <Placements />
+            </>
+          }
+        />
+
+        {/* ✅ ADMIN PLACEMENTS */}
+        <Route
+          path="/admin"
+          element={
+            <>
+              <Navigation />
+              <AdminPlacements />
+            </>
+          }
+        />
+
+        {/* Roadmaps */}
         <Route
           path="/roadmaps"
           element={
@@ -76,7 +100,7 @@ const App = () => (
           }
         />
 
-        {/* ✅ ROADMAP DETAILS PAGE */}
+        {/* Roadmap Details */}
         <Route
           path="/roadmap/:id"
           element={

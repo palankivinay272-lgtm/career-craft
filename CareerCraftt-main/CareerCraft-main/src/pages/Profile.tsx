@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { User, Mail, Github, Link2, Save, Pencil } from "lucide-react";
+import { auth, db } from "../lib/firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
@@ -26,26 +28,69 @@ const Profile = () => {
   });
 
   /* =========================
-     LOAD FROM LOCAL STORAGE
+     LOAD FROM FIRESTORE
      ========================= */
   useEffect(() => {
-    const saved = localStorage.getItem("careerCraftProfile");
-    if (saved) {
-      setProfile(JSON.parse(saved));
-    }
-  }, []);
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        // Pre-fill email from Auth if profile is empty
+        setProfile((prev) => ({ ...prev, email: user.email || "" }));
+
+        try {
+          const docRef = doc(db, "users", user.uid);
+          const docSnap = await getDoc(docRef);
+
+          if (docSnap.exists()) {
+            const data = docSnap.data() as ProfileData;
+            // Merge with existing state to avoid overwriting with undefined if fields are missing
+            setProfile((prev) => ({ ...prev, ...data }));
+          }
+        } catch (error) {
+          console.error("Error fetching profile:", error);
+          toast({
+            variant: "destructive",
+            title: "Error loading profile",
+            description: "Could not fetch data from server.",
+          });
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, [toast]);
 
   /* =========================
-     SAVE TO LOCAL STORAGE
+     SAVE TO FIRESTORE
      ========================= */
-  const saveProfile = () => {
-    localStorage.setItem("careerCraftProfile", JSON.stringify(profile));
-    setIsEditing(false);
+  const saveProfile = async () => {
+    const user = auth.currentUser;
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Not logged in",
+        description: "You must be logged in to save your profile.",
+      });
+      return;
+    }
 
-    toast({
-      title: "Profile updated",
-      description: "Your profile has been saved successfully.",
-    });
+    try {
+      const docRef = doc(db, "users", user.uid);
+      await setDoc(docRef, profile, { merge: true });
+
+      setIsEditing(false);
+
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been saved to the cloud successfully.",
+      });
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      toast({
+        variant: "destructive",
+        title: "Save failed",
+        description: "Could not save changes to server.",
+      });
+    }
   };
 
   return (

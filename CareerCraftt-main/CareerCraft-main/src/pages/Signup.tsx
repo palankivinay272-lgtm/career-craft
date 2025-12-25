@@ -18,30 +18,45 @@ export default function Signup() {
     setLoading(true);
 
     try {
-      // 🔗 Call backend signup API
-      const response = await fetch("http://127.0.0.1:8000/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+      // 🔗 Firebase Signup
+      const { createUserWithEmailAndPassword } = await import("firebase/auth");
+      const { auth } = await import("../lib/firebase");
 
-      let data;
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      console.log("Registered:", userCredential.user);
+
+      // Sync with Backend
       try {
-        data = await response.json();
-      } catch {
-        throw new Error("Invalid server response");
+        const token = await userCredential.user.getIdToken();
+        await fetch("http://127.0.0.1:8000/verify-token", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token }),
+        });
+      } catch (err) {
+        console.error("Backend Sync Failed:", err);
+        // Optional: We don't block the user, just log it.
+        // Because usually verify-token is for syncing logic.
       }
 
-      if (response.ok && data.success) {
-        toast.success("Account created! Please login.");
-        navigate("/login");
-      } else {
-        toast.error(data.message || "Signup failed. Try another email.");
-      }
+      toast.success("Account created! Logging you in...");
 
-    } catch (error) {
+      // Auto-login after signup just like a modern app
+      // Set local storage for ProtectedRoute compatibility
+      localStorage.setItem("user", userCredential.user.email?.split("@")[0] || "User");
+      localStorage.setItem("email", userCredential.user.email || "");
+
+      navigate("/dashboard");
+
+    } catch (error: any) {
       console.error("Signup Error:", error);
-      toast.error("Could not connect to server. Is backend running?");
+      if (error.code === 'auth/email-already-in-use') {
+        toast.error("Email already in use. Try logging in.");
+      } else if (error.code === 'auth/weak-password') {
+        toast.error("Password should be at least 6 characters.");
+      } else {
+        toast.error("Signup failed: " + error.message);
+      }
     } finally {
       setLoading(false);
     }

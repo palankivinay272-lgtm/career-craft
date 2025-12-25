@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../lib/firebase";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -39,36 +41,67 @@ export default function Login() {
       if (adminData.success) {
         // ✅ ADMIN LOGIN
         localStorage.setItem("isAdmin", "true");
+        // Store college if returned (e.g. "IIT Bombay"), or "SUPER_ADMIN" fallback
+        if (adminData.college) {
+          localStorage.setItem("adminCollege", adminData.college);
+        }
+
         toast.success("Admin login successful!");
         navigate("/admin");
         return;
       }
 
       /* ===============================
-         2️⃣ NORMAL USER LOGIN
+         2️⃣ NORMAL USER LOGIN (FIREBASE)
       =============================== */
-      const userRes = await fetch("http://127.0.0.1:8000/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
 
-      const userData = await userRes.json();
-
-      if (userRes.ok && userData.success) {
-        localStorage.removeItem("isAdmin");
-        localStorage.setItem("user", userData.user);
-        localStorage.setItem("email", userData.email);
-
-        toast.success("Login successful!");
-        navigate("/dashboard");
-      } else {
-        toast.error(userData.message || "Invalid credentials");
+      // If Admin login failed and input is NOT an email, don't try Firebase
+      if (!email.includes("@")) {
+        toast.error("Invalid username or password");
+        setLoading(false);
+        return;
       }
 
-    } catch (error) {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Sync with Backend
+      try {
+        const token = await user.getIdToken();
+        await fetch("http://127.0.0.1:8000/verify-token", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token }),
+        });
+      } catch (err) {
+        console.error("Backend Sync Failed:", err);
+      }
+
+      localStorage.removeItem("isAdmin");
+      localStorage.setItem("user", user.email?.split("@")[0] || "User");
+      localStorage.setItem("email", user.email || "");
+      localStorage.setItem("uid", user.uid);
+
+      toast.success("Login successful!");
+      navigate("/dashboard");
+
+    } catch (error: any) {
       console.error(error);
-      toast.error("Server error. Is the backend running?");
+      if (error.message === "Backend not reachable") {
+        // Admin login failed connection, but if we are trying user login, it might be firebase error
+        toast.error("Admin Login/Server Error: " + error.message);
+      } else if (error.code) {
+        // Firebase Error
+        if (error.code === 'auth/invalid-credential' || error.code === 'auth/invalid-email') {
+          // If we got here, it means Admin Login failed (backend said {success:false}) AND Firebase failed.
+          // So it really is invalid creds.
+          toast.error("Invalid email or password");
+        } else {
+          toast.error("Login failed: " + error.message);
+        }
+      } else {
+        toast.error("Something went wrong");
+      }
     } finally {
       setLoading(false);
     }
@@ -76,7 +109,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-[#1a0b2e] to-black relative overflow-hidden">
-      
+
       {/* Glow background */}
       <div className="absolute w-[500px] h-[500px] bg-purple-600/30 rounded-full blur-3xl top-[-200px]" />
       <div className="absolute w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-3xl bottom-[-200px] right-[-200px]" />

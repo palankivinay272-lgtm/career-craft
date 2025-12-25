@@ -137,7 +137,7 @@ export const QUESTIONS: QuestionsData = {
       { q: "Floyd-Warshall?", options: ["All-pairs shortest path", "Single source", "Sorting", "MST"], correct: 0, exp: "Finds paths between all pairs." },
     ],
   },
-  
+
   "Database / SQL": {
     easy: [
       { q: "SQL stands for?", options: ["Structured Query Language", "Simple Query List", "Standard Question Log", "System Queue Logic"], correct: 0, exp: "Language for RDBMS." },
@@ -257,4 +257,142 @@ export const QUESTIONS: QuestionsData = {
       { q: "CDN?", options: ["Content Delivery Network", "Cloud Data Net", "Central Disk Node", "Code Domain Name"], correct: 0, exp: "Speeds up content globally." },
     ],
   },
+  "Frontend Development": {
+    easy: [
+      { q: "HTML stands for?", options: ["Hyper Text Markup Language", "High Text Machine Language", "Hyper Tool ML", "None"], correct: 0, exp: "Standard markup language for web." },
+      { q: "CSS is used for?", options: ["Styling", "Logic", "Database", "Server"], correct: 0, exp: "Cascading Style Sheets control layout." },
+      { q: "What is the DOM?", options: ["Document Object Model", "Data Object Mode", "Disk OS Mode", "Digital Ordinance Model"], correct: 0, exp: "DOM represents the page structure." },
+      { q: "Which tag creates a link?", options: ["<a>", "<link>", "<href>", "<url>"], correct: 0, exp: "The anchor tag <a> defines hyperlinks." },
+      { q: "What is HTTP?", options: ["Protocol for fetching resources", "Programming Language", "Database", "Browser"], correct: 0, exp: "HyperText Transfer Protocol." },
+    ],
+    medium: [
+      { q: "What is the Virtual DOM?", options: ["Lightweight copy of DOM", "A VR tool", "Browser engine", "Server file"], correct: 0, exp: "React uses it for performance." },
+      { q: "What is a Closure?", options: ["Function with lexical environment", "Closing a tag", "Ending a loop", "Error type"], correct: 0, exp: "Function remembering variables from outer scope." },
+      { q: "Difference: == vs ===?", options: ["Value vs Value & Type", "No difference", "Assignment vs Compare", "Speed"], correct: 0, exp: "=== checks types as well." },
+      { q: "What is 'this' in JS?", options: ["Reference to object", "A variable", "A function", "Global scope"], correct: 0, exp: "Refers to the object executing the code." },
+      { q: "What is Flexbox?", options: ["One-dimensional layout method", "Animation tool", "Database", "Testing tool"], correct: 0, exp: "CSS module for flexible layouts." },
+    ],
+    hard: [
+      { q: "What is Event Bubbling?", options: ["Event goes from child to parent", "Parent to child", "Stops event", "Creates event"], correct: 0, exp: "Events propagate up the DOM tree." },
+      { q: "What is CORS?", options: ["Cross-Origin Resource Sharing", "Code Optimization", "Server Security", "Route Service"], correct: 0, exp: "Allows restricted resources on a web page." },
+      { q: "What is Hoisting?", options: ["Declarations moved to top", "Lifting elements", "Server hosting", "API calls"], correct: 0, exp: "Variables/functions are moved to top of scope." },
+      { q: "Promises handle?", options: ["Asynchronous operations", "Synchronous code", "Loops", "Variables"], correct: 0, exp: "Represents future completion of async task." },
+      { q: "What is SSR?", options: ["Server Side Rendering", "Simple Site Route", "Static Site React", "Secure Socket Run"], correct: 0, exp: "HTML is generated on the server." },
+    ],
+  },
+  "Backend Development": {
+    easy: [
+      { q: "What is a REST API?", options: ["Representational State Transfer", "Resting API", "Random State Transfer", "Real Time API"], correct: 0, exp: "Architectural style for web services." },
+      { q: "Node.js is?", options: ["JS runtime environment", "A Framework", "A Database", "An OS"], correct: 0, exp: "Executes JS outside browser." },
+      { q: "What is Middleware?", options: ["Software bridge", "Virus", "Hardware", "Database"], correct: 0, exp: "Code running between request and response." },
+      { q: "Status code 200?", options: ["OK", "Error", "Not Found", "Created"], correct: 0, exp: "Standard success code." },
+      { q: "What is JSON?", options: ["JavaScript Object Notation", "Java Sorting Object", "Jupyter Source Node", "None"], correct: 0, exp: "Data interchange format." },
+    ],
+    medium: [
+      { q: "SQL vs NoSQL?", options: ["Structured vs Flexible", "Fast vs Slow", "Old vs New", "Local vs Cloud"], correct: 0, exp: "Relational vs Document/Key-Value." },
+      { q: "What is JWT?", options: ["JSON Web Token", "Java Web Tool", "Jupyter Web Test", "Just Web Text"], correct: 0, exp: "Used for secure transmission." },
+      { q: "Horizontal Scaling?", options: ["Adding more machines", "Upgrading hardware", "Deleting data", "Optimizing code"], correct: 0, exp: "Distributing load across servers." },
+      { q: "What is an ORM?", options: ["Object-Relational Mapping", "Object Random Memory", "Ordered Real Mode", "Output Read Mode"], correct: 0, exp: "Converts data between incompatible type systems." },
+      { q: "What is Pagination?", options: ["Dividing content into pages", "Deleting pages", "Sorting pages", "Printing"], correct: 0, exp: "Optimizes large data retrieval." },
+    ],
+    hard: [
+      { q: "CAP Theorem?", options: ["Consistency, Availability, Partition", "CPU, APU, PPU", "Cache, App, Port", "Code, App, Program"], correct: 0, exp: "Distributed store trade-offs." },
+      { q: "Microservices vs Monolith?", options: ["Distributed vs Single Unit", "Small vs Big", "Fast vs Slow", "New vs Old"], correct: 0, exp: "Architecture styles." },
+      { q: "What is GraphQL?", options: ["Query language for APIs", "Database", "Graph tool", "Chart library"], correct: 0, exp: "Allows clients to request specific data." },
+      { q: "Rate Limiting?", options: ["Control traffic rate", "Speed up internet", "Count money", "Measure weight"], correct: 0, exp: "Prevents abuse." },
+      { q: "Message Queue?", options: ["Async communication", "Email list", "Chat app", "Database"], correct: 0, exp: "Decouples services (e.g., RabbitMQ, Kafka)." },
+    ],
+  },
+  "Full Stack Development": {
+    easy: [
+      { q: "What connects Frontend & Backend?", options: ["API", "HTML", "CSS", "Database"], correct: 0, exp: "Application Programming Interface." },
+      { q: "What is MVC?", options: ["Model View Controller", "Main View Code", "Master Video Control", "Mobile View Cell"], correct: 0, exp: "Design pattern." },
+      { q: "Git is for?", options: ["Version Control", "Design", "Testing", "Hosting"], correct: 0, exp: "Tracks code changes." },
+      { q: "What is npm?", options: ["Node Package Manager", "New Project Manager", "Node Program Mode", "None"], correct: 0, exp: "Package manager for JS." },
+      { q: "Client-side vs Server-side?", options: ["Browser vs Server", "Left vs Right", "Up vs Down", "User vs Admin"], correct: 0, exp: "Where code executes." },
+    ],
+    medium: [
+      { q: "CORS issues happen when?", options: ["Different origins", "Same origin", "Offline", "Slow network"], correct: 0, exp: "Security feature of browsers." },
+      { q: "What is Webpack?", options: ["Module Bundler", "Browser", "Editor", "Language"], correct: 0, exp: "Bundles assets." },
+      { q: "Session vs Token?", options: ["Server state vs Stateless", "Same", "Fast vs Slow", "Old vs New"], correct: 0, exp: "Auth mechanisms." },
+      { q: "React Props vs State?", options: ["Passed vs Managed", "Static vs Dynamic", "Global vs Local", "None"], correct: 0, exp: "Data flow in React." },
+      { q: "Environment Variables?", options: ["Config values", "Global vars", "UI themes", "Functions"], correct: 0, exp: "Secrets/config outside code." },
+    ],
+    hard: [
+      { q: "SSR benefits?", options: ["SEO & Initial Load", "Easier code", "Less server load", "No benefits"], correct: 0, exp: "Search engines can crawl." },
+      { q: "WebSockets?", options: ["Real-time full-duplex", "One-way", "Slow", "Offline"], correct: 0, exp: "Persistent connection." },
+      { q: "Docker Containers?", options: ["Isolated environments", "Virtual Machines", "Folders", "Zips"], correct: 0, exp: "Package app with dependencies." },
+      { q: "CI/CD?", options: ["Continuous Integration/Deployment", "Code Input/Code Delete", "Cloud In/Cloud Down", "None"], correct: 0, exp: "Automated delivery pipeline." },
+      { q: "OIDC vs OAuth2?", options: ["AuthN vs AuthZ", "Same", "Speed", "Price"], correct: 0, exp: "Identity vs Access." },
+    ],
+  },
+  "DevOps": {
+    easy: [
+      { q: "What is DevOps?", options: ["Dev + Ops collaboration", "A tool", "A language", "A server"], correct: 0, exp: "Culture of collaboration." },
+      { q: "Git commands?", options: ["commit, push, pull", "save, load, run", "start, stop, pause", "cut, copy, paste"], correct: 0, exp: "Version control ops." },
+      { q: "What is CI?", options: ["Continuous Integration", "Code Input", "Cloud Interface", "Committed Index"], correct: 0, exp: "Merging code frequently." },
+      { q: "Linux command `ls`?", options: ["List files", "Lost system", "Link server", "Load script"], correct: 0, exp: "Lists directory contents." },
+      { q: "What is a Server?", options: ["Computer providing services", "Waiter", "Internet", "Screen"], correct: 0, exp: "Host for applications." },
+    ],
+    medium: [
+      { q: "Docker vs VM?", options: ["Container vs Full OS", "Same", "Free vs Paid", "Fast vs Slow"], correct: 0, exp: "Docker shares OS kernel." },
+      { q: "Jenkins is for?", options: ["Automation Server", "Database", "Editor", "Browser"], correct: 0, exp: "CI/CD tool." },
+      { q: "Ansible uses?", options: ["Playbooks (YAML)", "Scripts (Bash)", "Java", "C++"], correct: 0, exp: "Config management." },
+      { q: "Kubernetes Pod?", options: ["Smallest deployable unit", "A server", "A cluster", "A disk"], correct: 0, exp: "Wraps containers." },
+      { q: "Infrastructure as Code?", options: ["Managing infra via code", "Coding on server", "Hard coding", "None"], correct: 0, exp: "Terraform, Ansible, etc." },
+    ],
+    hard: [
+      { q: "Kubernetes Service?", options: ["Network abstraction", "A worker", "A master", "A disk"], correct: 0, exp: "Exposes Pods." },
+      { q: "Blue-Green Deployment?", options: ["Zero downtime switch", "Color theme", "Testing UI", "Slow rollout"], correct: 0, exp: "Two identical environments." },
+      { q: "What is Prometheus?", options: ["Monitoring tool", "Database", "CI tool", "Web server"], correct: 0, exp: "Time-series DB for metrics." },
+      { q: "GitOps?", options: ["Git as source of truth", "GitHub Ops", "Git optimize", "None"], correct: 0, exp: "Ops workflow using Git." },
+      { q: "Terraform State?", options: ["Mapping of resources", "US State", "Status", "Log"], correct: 0, exp: "Tracks real-world resources." },
+    ],
+  },
+  "React Native": {
+    easy: [
+      { q: "React Native uses?", options: ["React & Native Components", "HTML & CSS", "Java only", "Swift only"], correct: 0, exp: "Builds mobile apps." },
+      { q: "View tag equivalent?", options: ["div", "span", "p", "img"], correct: 0, exp: "Basic container." },
+      { q: "Text tag?", options: ["Renders text", "Input", "Button", "Image"], correct: 0, exp: "Required for text nodes." },
+      { q: "Flexbox in RN?", options: ["Main layout model", "Not supported", "Optional", "Only Grid"], correct: 0, exp: "Defaults to column direction." },
+      { q: "Platform module?", options: ["Detects OS (iOS/Android)", "Detects browser", "Detects screen", "None"], correct: 0, exp: "Platform specific code." },
+    ],
+    medium: [
+      { q: "ScrollView vs FlatList?", options: ["All vs Lazy load", "Same", "Horizontal vs Vertical", "None"], correct: 0, exp: "FlatList optimizes long lists." },
+      { q: "StyleSheet.create?", options: ["Optimizes styles", "Creates CSS file", "Imports CSS", "None"], correct: 0, exp: "Performance optimization." },
+      { q: "AsyncStorage?", options: ["Local key-value storage", "Cloud DB", "SQL DB", "Cache"], correct: 0, exp: "Unencrypted, asynchronous." },
+      { q: "Navigation?", options: ["React Navigation", "Router DOM", "Link tag", "Href"], correct: 0, exp: "Library for screens." },
+      { q: "What is Expo?", options: ["Framework/Toolchain", "A component", "A database", "A server"], correct: 0, exp: "Simplifies RN development." },
+    ],
+    hard: [
+      { q: "Bridge in RN?", options: ["JS/Native communication", "Network bridge", "UI bridge", "None"], correct: 0, exp: "Async serialization." },
+      { q: "JSI (JavaScript Interface)?", options: ["Direct C++ calls", "Java Interface", "JSON Format", "Old Bridge"], correct: 0, exp: "Faster than Bridge." },
+      { q: "Native Modules?", options: ["Platform specific native code", "JS modules", "npm packages", "CSS modules"], correct: 0, exp: "Access native APIs." },
+      { q: "Hermes Engine?", options: ["Optimized JS engine", "Game engine", "Physics engine", "Render engine"], correct: 0, exp: "Improves startup time." },
+      { q: "Animated API?", options: ["Declarative animations", "Video player", "GIF maker", "Canvas"], correct: 0, exp: "Fluid motion." },
+    ],
+  },
+  "Blockchain": {
+    easy: [
+      { q: "What is Blockchain?", options: ["Distributed Ledger Technology", "Centralized Database", "Cloud Storage", "Currency"], correct: 0, exp: "Decentralized record keeping." },
+      { q: "What is a Block?", options: ["Container for data", "A brick", "A file", "A virus"], correct: 0, exp: "Stores transaction data." },
+      { q: "Bitcoin creator?", options: ["Satoshi Nakamoto", "Vitalik Buterin", "Elon Musk", "Bill Gates"], correct: 0, exp: "Pseudonymous creator." },
+      { q: "What is Mining?", options: ["Validating transactions", "Digging gold", "Creating files", "Hacking"], correct: 0, exp: "Process of adding blocks." },
+      { q: "Wallet address?", options: ["Public key", "Private key", "Password", "Email"], correct: 0, exp: "Used to receive funds." },
+    ],
+    medium: [
+      { q: "Proof of Work?", options: ["Consensus algorithm", "Job certificate", "ID card", "Login"], correct: 0, exp: "Requires computational difficulty." },
+      { q: "Smart Contract?", options: ["Self-executing code", "Legal paper", "Digital signature", "Payment"], correct: 0, exp: "Runs on blockchain automatically." },
+      { q: "DeFi stands for?", options: ["Decentralized Finance", "Digital Finance", "Data Finance", "Direct Fund"], correct: 0, exp: "Finance without intermediaries." },
+      { q: "Ethereum token standard?", options: ["ERC-20", "HTTP", "ISO", "TCP"], correct: 0, exp: "Standard for tokens." },
+      { q: "Hash function?", options: ["One-way encryption", "Two-way", "Sorting", "Compression"], correct: 0, exp: "Maps data to fixed size." },
+    ],
+    hard: [
+      { q: "51% Attack?", options: ["Majority control of network", "Hacking 51 servers", "Price drop", "Fork"], correct: 0, exp: "Attacker controls mining power." },
+      { q: "Byzantine Generals Problem?", options: ["Consensus issue", "War strategy", "Hardware failure", "Routing"], correct: 0, exp: "Reaching agreement in unreliable system." },
+      { q: "Lightning Network?", options: ["Layer 2 solution", "New coin", "Cloud", "Wallet"], correct: 0, exp: "Faster Bitcoin transactions." },
+      { q: "Solidity?", options: ["Smart contract language", "Database", "Protocol", "Wallet"], correct: 0, exp: "Language for Ethereum." },
+      { q: "DAO?", options: ["Decentralized Autonomous Org", "Data Access Obj", "Digital Asset Org", "Domain Admin"], correct: 0, exp: "Org run by code." },
+    ],
+  }
 };

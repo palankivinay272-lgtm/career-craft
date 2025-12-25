@@ -38,8 +38,9 @@ export default function AdminPlacements() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  // 🔑 FIX: college is now editable
+  // 🔑 FIX: college is now editable but locked for specific admins
   const [college, setCollege] = useState("ABC College");
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
   const [company, setCompany] = useState("");
   const [totalHires, setTotalHires] = useState(0);
@@ -48,8 +49,17 @@ export default function AdminPlacements() {
   const [placements, setPlacements] = useState<Placement[]>([]);
 
   useEffect(() => {
-    if (localStorage.getItem("isAdmin") === "true") {
+    const isAdmin = localStorage.getItem("isAdmin") === "true";
+    const adminCollege = localStorage.getItem("adminCollege");
+
+    if (isAdmin) {
       setLoggedIn(true);
+      if (adminCollege && adminCollege !== "SUPER_ADMIN") {
+        setCollege(adminCollege);
+        setIsSuperAdmin(false);
+      } else {
+        setIsSuperAdmin(true);
+      }
     }
   }, []);
 
@@ -59,17 +69,31 @@ export default function AdminPlacements() {
   }, [college, loggedIn]);
 
   const login = async () => {
-    const res = await fetch("http://127.0.0.1:8000/admin/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
-    });
-    const data = await res.json();
-    if (data.success) {
-      localStorage.setItem("isAdmin", "true");
-      setLoggedIn(true);
-    } else {
-      alert("Wrong credentials");
+    try {
+      const res = await fetch("http://127.0.0.1:8000/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        localStorage.setItem("isAdmin", "true");
+        localStorage.setItem("adminCollege", data.college); // Store the college
+
+        setLoggedIn(true);
+        if (data.college !== "SUPER_ADMIN") {
+          setCollege(data.college);
+          setIsSuperAdmin(false);
+        } else {
+          setIsSuperAdmin(true);
+        }
+      } else {
+        alert("Wrong credentials");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Login failed");
     }
   };
 
@@ -81,18 +105,39 @@ export default function AdminPlacements() {
   };
 
   const addPlacement = async () => {
-    await fetch("http://127.0.0.1:8000/admin/placements", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        college, // ✅ dynamic now
-        company,
-        totalHires,
-        domains: domains.split(",").map(d => d.trim()),
-        roles: roles.split(",").map(r => r.trim()),
-      }),
-    });
-    loadPlacements();
+    if (!company || !totalHires) {
+      alert("Please enter Company and Hires");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://127.0.0.1:8000/admin/placements", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          college,
+          company,
+          totalHires,
+          domains: domains.split(",").map(d => d.trim()),
+          roles: roles.split(",").map(r => r.trim()),
+        }),
+      });
+
+      if (res.ok) {
+        alert("Placement added successfully!");
+        // Clear inputs
+        setCompany("");
+        setTotalHires(0);
+        setDomains("");
+        setRoles("");
+        loadPlacements();
+      } else {
+        alert("Failed to add placement");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Error connecting to server");
+    }
   };
 
   const deletePlacement = async (i: number) => {
@@ -126,10 +171,12 @@ export default function AdminPlacements() {
       <h1 className="text-3xl text-purple-400">Admin Panel</h1>
 
       {/* 🏫 COLLEGE SELECTOR */}
+      {/* 🏫 COLLEGE SELECTOR */}
       <select
         value={college}
+        disabled={!isSuperAdmin}
         onChange={(e) => setCollege(e.target.value)}
-        className="w-full p-2 bg-black border border-white/20 rounded"
+        className={`w-full p-2 bg-black border border-white/20 rounded ${!isSuperAdmin ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         {COLLEGES.map(c => (
           <option key={c} value={c}>{c}</option>

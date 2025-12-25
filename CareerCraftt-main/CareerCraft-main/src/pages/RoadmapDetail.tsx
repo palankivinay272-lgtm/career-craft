@@ -40,7 +40,7 @@ const RoadmapDetail = () => {
   if (!roadmap) {
     return (
       <div className="min-h-screen bg-background">
-        
+
         <div className="container mx-auto px-4 pt-32 text-center">
           <h1 className="text-2xl font-bold mb-4">Roadmap Not Found</h1>
           <Link to="/roadmaps">
@@ -139,18 +139,47 @@ const RoadmapDetail = () => {
                 </div>
                 <Progress value={progress} className="h-2" />
 
-                <div className="mt-4 flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => {
-                      navigator.clipboard.writeText(window.location.href);
-                    }}
-                  >
-                    <Share2 className="h-4 w-4 mr-2" />
-                    Share
-                  </Button>
+                <div className="mt-4 flex flex-col gap-2">
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => {
+                        navigator.clipboard.writeText(window.location.href);
+                      }}
+                    >
+                      <Share2 className="h-4 w-4 mr-2" />
+                      Share
+                    </Button>
+                  </div>
+
+                  {/* Quiz Button */}
+                  {(() => {
+                    const quizMapping: Record<string, string> = {
+                      "frontend": "Frontend Development",
+                      "backend": "Backend Development",
+                      "fullstack": "Full Stack Development",
+                      "devops": "DevOps",
+                      "data-science": "AI / ML",
+                      "mobile-react-native": "React Native",
+                      "cybersecurity": "Cyber Security",
+                      "blockchain": "Blockchain",
+                    };
+                    const quizDomain = quizMapping[roadmap.id] || quizMapping[roadmap.category];
+
+                    if (quizDomain) {
+                      return (
+                        <Link to={`/interview?domain=${encodeURIComponent(quizDomain)}`}>
+                          <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white" size="sm">
+                            <Icons.BrainCircuit className="h-4 w-4 mr-2" />
+                            Take Quiz
+                          </Button>
+                        </Link>
+                      );
+                    }
+                    return null;
+                  })()}
                 </div>
               </div>
             </div>

@@ -1,17 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import TextInterview from "../components/TextInterview";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Bot, ArrowLeft } from "lucide-react";
 
 const MockInterview = () => {
-  const [mode, setMode] = useState<"menu" | "text">("menu");
+  const [searchParams] = useSearchParams();
+  const initialDomain = searchParams.get("domain") || "";
+  const [mode, setMode] = useState<"menu" | "text">(initialDomain ? "text" : "menu");
 
   return (
     <div className="min-h-screen bg-black text-white p-4 md:p-8 flex flex-col">
       {mode === "menu" ? (
         <div className="max-w-4xl mx-auto w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 mt-10">
-          
+
           {/* Header Section */}
           <div className="text-center space-y-4">
             <h1 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-indigo-400 to-purple-600 bg-clip-text text-transparent">
@@ -24,7 +27,7 @@ const MockInterview = () => {
 
           {/* Centered Card Section */}
           <div className="flex justify-center mt-12">
-            <Card 
+            <Card
               onClick={() => setMode("text")}
               className="group relative overflow-hidden p-8 bg-gray-900 border-gray-800 hover:border-indigo-500 transition-all duration-300 cursor-pointer hover:shadow-2xl hover:shadow-indigo-500/10 max-w-md w-full"
             >
@@ -37,7 +40,7 @@ const MockInterview = () => {
                 <div className="p-4 bg-indigo-500/20 rounded-full">
                   <Bot className="text-indigo-400" size={40} />
                 </div>
-                
+
                 <div className="space-y-2">
                   <h3 className="text-2xl font-bold text-white">Technical Quiz</h3>
                   <p className="text-gray-400">
@@ -57,16 +60,17 @@ const MockInterview = () => {
         </div>
       ) : (
         <div className="max-w-5xl mx-auto w-full">
-           <Button 
-             variant="ghost" 
-             onClick={() => setMode("menu")} 
-             className="mb-6 text-gray-400 hover:text-white hover:bg-gray-800"
-           >
-             <ArrowLeft className="mr-2 h-4 w-4" /> Back to Menu
-           </Button>
-           
-           {/* Render the Quiz Component */}
-           <TextInterview />
+          <Button
+            variant="ghost"
+            onClick={() => setMode("menu")}
+            className="mb-6 text-gray-400 hover:text-white hover:bg-gray-800"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" /> Back to Menu
+          </Button>
+
+          {/* Render the Quiz Component */}
+          {/* Key forces re-render if domain changes */}
+          <TextInterview key={initialDomain} initialDomain={initialDomain} />
         </div>
       )}
     </div>

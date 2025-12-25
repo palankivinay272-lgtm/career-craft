@@ -1,0 +1,9 @@
+firebase-admin
+fastapi
+uvicorn
+sqlalchemy
+pdfminer.six
+scikit-learn
+python-multipart
+spacy
+numpy

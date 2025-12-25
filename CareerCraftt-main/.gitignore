@@ -5,4 +5,8 @@ __pycache__/
 .vite/
 dist/
 build/
-*.db 
+*.db
+serviceAccountKey.json
+backend/serviceAccountKey.json
+*.log
+git_execution_log.txt

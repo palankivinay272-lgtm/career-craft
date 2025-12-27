@@ -23,16 +23,23 @@ const Navigation = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // ✅ IMPORTANT FIX: re-check admin on every route change
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // ✅ IMPORTANT FIX: re-check auth on every route change
   useEffect(() => {
     const admin = localStorage.getItem("isAdmin");
+    const email = localStorage.getItem("email");
     setIsAdmin(admin === "true");
+    setIsLoggedIn(!!email);
   }, [location.pathname]);
 
   const logout = () => {
     localStorage.removeItem("isAdmin");
+    localStorage.removeItem("email");
+    localStorage.removeItem("user");
     setIsAdmin(false);
-    navigate("/dashboard");
+    setIsLoggedIn(false);
+    navigate("/login");
   };
 
   const navItems = [
@@ -51,7 +58,7 @@ const Navigation = () => {
     <nav className="glass-card border-b border-border/30 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
-          
+
           {/* LOGO */}
           <Link to="/" className="flex items-center space-x-2 hover-bounce">
             <div className="w-8 h-8 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
@@ -68,11 +75,10 @@ const Navigation = () => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 ${
-                  isActive(item.path)
-                    ? "bg-primary/20 text-primary neon-glow"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-                }`}
+                className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 ${isActive(item.path)
+                  ? "bg-primary/20 text-primary neon-glow"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                  }`}
               >
                 <item.icon className="h-4 w-4" />
                 <span className="text-sm font-medium">{item.name}</span>
@@ -90,8 +96,8 @@ const Navigation = () => {
               </Link>
             )}
 
-            {/* 🚪 LOGOUT (ONLY FOR ADMIN) */}
-            {isAdmin && (
+            {/* 🚪 LOGOUT (FOR ALL USERS) */}
+            {isLoggedIn && (
               <Button
                 variant="ghost"
                 className="text-red-400 hover:text-red-500"
@@ -122,11 +128,10 @@ const Navigation = () => {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 ${
-                    isActive(item.path)
-                      ? "bg-primary/20 text-primary"
-                      : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-                  }`}
+                  className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 ${isActive(item.path)
+                    ? "bg-primary/20 text-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                    }`}
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <item.icon className="h-5 w-5" />
@@ -134,27 +139,28 @@ const Navigation = () => {
                 </Link>
               ))}
 
-              {/* ADMIN + LOGOUT (MOBILE) */}
+              {/* ADMIN (MOBILE) */}
               {isAdmin && (
-                <>
-                  <Link
-                    to="/admin"
-                    className="flex items-center space-x-3 px-3 py-3 rounded-lg text-yellow-400"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <Shield className="h-5 w-5" />
-                    <span className="font-medium">Admin</span>
-                  </Link>
+                <Link
+                  to="/admin"
+                  className="flex items-center space-x-3 px-3 py-3 rounded-lg text-yellow-400"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <Shield className="h-5 w-5" />
+                  <span className="font-medium">Admin</span>
+                </Link>
+              )}
 
-                  <Button
-                    variant="ghost"
-                    className="justify-start text-red-400"
-                    onClick={logout}
-                  >
-                    <LogOut className="h-5 w-5 mr-2" />
-                    Logout
-                  </Button>
-                </>
+              {/* LOGOUT (MOBILE) - FOR ALL USERS */}
+              {isLoggedIn && (
+                <Button
+                  variant="ghost"
+                  className="justify-start text-red-400"
+                  onClick={logout}
+                >
+                  <LogOut className="h-5 w-5 mr-2" />
+                  Logout
+                </Button>
               )}
             </div>
           </div>

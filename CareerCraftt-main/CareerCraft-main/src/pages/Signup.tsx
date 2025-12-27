@@ -1,17 +1,42 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function Signup() {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // 🆕
+  const [college, setCollege] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // List of Colleges (Shared with Placements.tsx - simplified for now)
+  const COLLEGES = [
+    "ABC College", "XYZ University", "IIT Delhi", "IIT Bombay", "IIT Madras",
+    "NIT Trichy", "NIT Warangal", "NIT Surathkal", "BITS Pilani", "VIT Vellore",
+    "SRM University", "Amity University", "Anna University", "JNTU Hyderabad",
+    "Osmania University", "Manipal University", "PES University", "Christ University",
+    "Lovely Professional University", "SASTRA University"
+  ];
+
+  const handleKeyDown = (e: React.KeyboardEvent, target: string) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (target === "password") {
+        document.getElementById("password-input")?.focus();
+      } else if (target === "college") {
+        document.getElementById("college-select")?.focus();
+      } else if (target === "submit") {
+        handleSignup();
+      }
+    }
+  };
+
   const handleSignup = async () => {
-    if (!email || !password) {
-      toast.error("Please fill in all fields");
+    if (!email || !password || !college) {
+      toast.error("Please fill in all fields (including College)");
       return;
     }
 
@@ -25,26 +50,25 @@ export default function Signup() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       console.log("Registered:", userCredential.user);
 
-      // Sync with Backend
+      // Sync with Backend (Sending token + college)
       try {
         const token = await userCredential.user.getIdToken();
-        await fetch("http://127.0.0.1:8000/verify-token", {
+        await fetch("http://localhost:8000/verify-token", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token }),
+          body: JSON.stringify({ token, college }),
         });
       } catch (err) {
         console.error("Backend Sync Failed:", err);
-        // Optional: We don't block the user, just log it.
-        // Because usually verify-token is for syncing logic.
       }
 
       toast.success("Account created! Logging you in...");
 
-      // Auto-login after signup just like a modern app
-      // Set local storage for ProtectedRoute compatibility
+      // Auto-login after signup
       localStorage.setItem("user", userCredential.user.email?.split("@")[0] || "User");
       localStorage.setItem("email", userCredential.user.email || "");
+      localStorage.setItem("uid", userCredential.user.uid);
+      localStorage.setItem("college", college);
 
       navigate("/dashboard");
 
@@ -93,16 +117,44 @@ export default function Signup() {
           className="w-full mb-4 rounded-lg bg-black/60 border border-white/10 px-4 py-2 outline-none focus:border-purple-500"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          onKeyDown={(e) => handleKeyDown(e, "password")} // 🆕
         />
 
-        {/* Password */}
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full mb-6 rounded-lg bg-black/60 border border-white/10 px-4 py-2 outline-none focus:border-purple-500"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        {/* Password Group */}
+        <div className="relative mb-4">
+          <input
+            id="password-input" // 🆕
+            type={showPassword ? "text" : "password"} // 🆕
+            placeholder="Password"
+            className="w-full rounded-lg bg-black/60 border border-white/10 px-4 py-2 outline-none focus:border-purple-500 pr-10"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => handleKeyDown(e, "college")} // 🆕
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
+        </div>
+
+        {/* College Selection */}
+        <select
+          id="college-select" // 🆕
+          className="w-full mb-6 rounded-lg bg-black/60 border border-white/10 px-4 py-2 outline-none focus:border-purple-500 text-white/80"
+          value={college}
+          onChange={(e) => setCollege(e.target.value)}
+          onKeyDown={(e) => handleKeyDown(e, "submit")} // 🆕
+        >
+          <option value="" disabled>Select your College</option>
+          {COLLEGES.map((c) => (
+            <option key={c} value={c} className="bg-black text-white">
+              {c}
+            </option>
+          ))}
+        </select>
 
         {/* Button */}
         <button

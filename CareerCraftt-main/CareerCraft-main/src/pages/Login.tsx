@@ -1,15 +1,42 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "../lib/firebase";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function Login() {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      toast.error("Please enter your email first");
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      toast.success("Password reset email sent!");
+    } catch (error: any) {
+      toast.error("Error: " + error.message);
+    }
+  };
+
+  // 🆕 Handle "Enter" key to focus next field or submit
+  const handleKeyDown = (e: React.KeyboardEvent, target: string) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (target === "password") {
+        document.getElementById("password-input")?.focus();
+      } else if (target === "submit") {
+        handleLogin();
+      }
+    }
+  };
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -68,11 +95,17 @@ export default function Login() {
       // Sync with Backend
       try {
         const token = await user.getIdToken();
-        await fetch("http://127.0.0.1:8000/verify-token", {
+        const res = await fetch("http://localhost:8000/verify-token", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ token }),
         });
+        const data = await res.json();
+
+        if (data.college) {
+          localStorage.setItem("college", data.college); // 🆕 Save fetched college
+        }
+
       } catch (err) {
         console.error("Backend Sync Failed:", err);
       }
@@ -133,21 +166,44 @@ export default function Login() {
 
         {/* Email */}
         <input
+          id="email-input"
           type="email"
           placeholder="Email / Username"
           className="w-full mb-4 rounded-lg bg-black/60 border border-white/10 px-4 py-2 outline-none focus:border-purple-500"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          onKeyDown={(e) => handleKeyDown(e, "password")} // 🆕 Move to password
         />
 
-        {/* Password */}
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full mb-6 rounded-lg bg-black/60 border border-white/10 px-4 py-2 outline-none focus:border-purple-500"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        {/* Password Group */}
+        <div className="relative mb-6">
+          <input
+            id="password-input"
+            type={showPassword ? "text" : "password"}
+            placeholder="Password"
+            className="w-full rounded-lg bg-black/60 border border-white/10 px-4 py-2 outline-none focus:border-purple-500 pr-10"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => handleKeyDown(e, "submit")}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
+        </div>
+
+        {/* Forgot Password */}
+        <div className="flex justify-end mb-6 -mt-4">
+          <button
+            onClick={handleForgotPassword}
+            className="text-xs text-gray-400 hover:text-purple-400 transition"
+          >
+            Forgot Password?
+          </button>
+        </div>
 
         {/* Button */}
         <button

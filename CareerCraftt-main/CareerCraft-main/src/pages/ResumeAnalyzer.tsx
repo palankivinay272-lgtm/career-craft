@@ -50,7 +50,7 @@ const ResumeAnalyzer = () => {
   useEffect(() => {
     const uid = localStorage.getItem("uid");
     if (uid) {
-      fetch(`http://127.0.0.1:8000/analysis-history/${uid}`)
+      fetch(`http://localhost:8000/analysis-history/${uid}`)
         .then(res => res.json())
         .then(data => setHistory(data.reverse())) // Reverse for chart (oldest first)
         .catch(err => console.error(err));
@@ -108,7 +108,7 @@ const ResumeAnalyzer = () => {
 
     try {
       const res = await fetch(
-        "http://127.0.0.1:8000/analyze-resume",
+        "http://localhost:8000/analyze-resume",
         { method: "POST", body: formData }
       );
 

@@ -378,12 +378,13 @@ def analyze_quality(resume_text):
 
 class TokenSchema(BaseModel):
     token: str
+    college: str = None # 🆕 Optional college field
 
 @app.post("/verify-token")
 def verify_user(data: TokenSchema, db: Session = Depends(get_db)):
     """
     Verifies the Firebase ID Token sent from Frontend.
-    If valid, ensures user exists in local SQLite (or just returns success).
+    If valid, ensures user exists in local SQLite AND Firestore.
     """
     from firebase_config import firebase_client
     
@@ -399,28 +400,48 @@ def verify_user(data: TokenSchema, db: Session = Depends(get_db)):
     
     # ---------------- FIRESTORE SYNC ----------------
     # Save/Update user in Firestore so we have a record in the DB
+    stored_college = None
     try:
+        from firebase_config import firebase_client
+        from firebase_admin import firestore
         fs_db = firebase_client.db
         if fs_db:
-            fs_db.collection("users").document(uid).set({
+            user_ref = fs_db.collection("users").document(uid)
+            
+            # 1. Get existing data first to find college
+            doc = user_ref.get()
+            if doc.exists:
+                user_dict = doc.to_dict()
+                stored_college = user_dict.get("college")
+            
+            # 2. Update with new info
+            user_data = {
                 "email": email,
                 "uid": uid,
                 "lastLogin": firestore.SERVER_TIMESTAMP
-            }, merge=True)
-            logger.info(f"Synced user {email} to Firestore")
+            }
+            # Only update college if it's provided (e.g., during signup)
+            if data.college:
+                user_data["college"] = data.college
+                stored_college = data.college # Use the new one if provided
+                
+            user_ref.set(user_data, merge=True)
+            logger.info(f"Synced user {email} to Firestore (College: {stored_college})")
     except Exception as e:
         logger.error(f"Failed to sync user to Firestore: {e}")
     # ------------------------------------------------
 
-    # Optional: Sync with local DB if you still want to keep local records
-    # (Leaving this here for backward compatibility with other endpoints that query 'User')
-    db_user = db.query(User).filter(User.email == email).first()
-    if not db_user:
-        new_user = User(email=email, password="firebase-managed") 
-        db.add(new_user)
-        db.commit()
+    
+    # SQLite Sync Removed - Fully migrated to Firestore
+    # db_user = db.query(User).filter(User.email == email).first()
+    # ...
 
-    return {"success": True, "user": email.split("@")[0], "email": email}
+    return {
+        "success": True, 
+        "user": email.split("@")[0], 
+        "email": email,
+        "college": stored_college # 🆕 Return college to frontend
+    }
 
 # ---------------- RESUME ----------------
 @app.post("/analyze-resume")
@@ -442,20 +463,21 @@ async def analyze_resume(
     ats_score, missing = analyze_content(resume_text, job_description)
     suggestions = analyze_quality(resume_text)
 
-    # 3. Save to DB (Legacy support)
-    saved = db.query(Resume).filter(Resume.email == email).first()
-    if saved:
-        saved.text = resume_text
-    else:
-        db.add(Resume(email=email, text=resume_text))
-    db.commit()
-
-    # 4. Save to Firestore History
+    # 3. Save to Firestore (Users Collection) - PRIMARY STORAGE
     if uid:
         try:
             from firebase_config import firebase_client
+            from firebase_admin import firestore
             fs_db = firebase_client.db
             if fs_db:
+                # Save Resume Text
+                fs_db.collection("users").document(uid).set({
+                    "resume_text": resume_text,
+                    "last_analyzed": firestore.SERVER_TIMESTAMP,
+                    "email": email # Ensure email is also there
+                }, merge=True)
+
+                # Save History (Subcollection)
                 fs_db.collection("users").document(uid).collection("analysis_history").add({
                     "score": ats_score,
                     "timestamp": firestore.SERVER_TIMESTAMP,
@@ -463,7 +485,10 @@ async def analyze_resume(
                     "missing_count": len(missing)
                 })
         except Exception as e:
-            print(f"Error saving history: {e}")
+            print(f"Error saving to Firestore: {e}")
+            
+    # Legacy SQLite save removed/deprecated
+    # saved = db.query(Resume).filter(Resume.email == email).first() ...
 
     return {
         "ats_score": ats_score,
@@ -474,6 +499,7 @@ async def analyze_resume(
 @app.get("/analysis-history/{uid}")
 def get_analysis_history(uid: str):
     from firebase_config import firebase_client
+    from firebase_admin import firestore
     fs_db = firebase_client.db
     history = []
     
@@ -543,8 +569,8 @@ def get_interview_questions(domain: str, level: str, limit: int = 5):
         try:
             # Query Firestore
             docs = fs_db.collection("interview_questions")\
-                .where("domain", "==", domain)\
-                .where("level", "==", level)\
+                .where(field_path="domain", op_string="==", value=domain)\
+                .where(field_path="level", op_string="==", value=level)\
                 .stream() # Fetch all matching (optimization: store count or sharded keys for huge DBs)
             
             all_questions = [doc.to_dict() for doc in docs]
@@ -560,16 +586,30 @@ def get_interview_questions(domain: str, level: str, limit: int = 5):
             
     return questions
 
-@app.get("/job-matches/{email}")
-def job_matches(email: str, db: Session = Depends(get_db)):
+@app.get("/job-matches/{uid}")
+def job_matches(uid: str):
+    print(f"🔍 DEBUG: /job-matches called for UID: {uid}")
     from firebase_config import firebase_client
-    # 1. Get Resume Text (still checking local SQL for now as we didn't migrate resumes yet completely,
-    #    or user might have just uploaded it. Ideally, resumes should go to Firestore users too.)
-    #    For now, keeping local Resume SQL for simplicity of migration unless we want full switch.
-    #    Wait, we are using email to lookup.
     
-    resume = db.query(Resume).filter(Resume.email == email).first()
-    if not resume:
+    # 1. Get Resume Text from Firestore
+    fs_db = firebase_client.db
+    resume_text = ""
+    
+    if fs_db:
+        # Fetch user doc by UID
+        doc = fs_db.collection("users").document(uid).get()
+        if doc.exists:
+            data = doc.to_dict()
+            resume_text = data.get("resume_text", "")
+            print(f"✅ DEBUG: Found resume text. Length: {len(resume_text)}")
+        else:
+            print(f"❌ DEBUG: User document not found for UID: {uid}")
+    else:
+        print("❌ DEBUG: Firestore DB not initialized")
+    
+    # If no resume text found in Firestore, return empty (forced migration)
+    if not resume_text:
+        print("⚠️ DEBUG: No resume text available. Returning empty matches.")
         return []
         
     # 2. Get Jobs from Firestore
@@ -581,13 +621,15 @@ def job_matches(email: str, db: Session = Depends(get_db)):
         docs = jobs_ref.stream()
         for doc in docs:
             jobs_data.append(doc.to_dict())
+        print(f"✅ DEBUG: Fetched {len(jobs_data)} jobs from Firestore")
     else:
         jobs_data = JOBS_DB # Fallback
+        print("⚠️ DEBUG: Using Fallback JOBS_DB")
 
     results = []
     for j in jobs_data:
         # Use our smart hybrid scorer
-        score, _ = analyze_content(resume.text, j.get("skills", ""))
+        score, _ = analyze_content(resume_text, j.get("skills", ""))
         
         results.append({
             "role": j.get("role", "Unknown Role"), 

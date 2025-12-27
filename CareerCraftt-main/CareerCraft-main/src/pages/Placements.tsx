@@ -53,11 +53,19 @@ export default function Placements() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    // 🆕 Check if user has a stored college
+    const storedCollege = localStorage.getItem("college");
+    if (storedCollege && COLLEGES.includes(storedCollege)) {
+      setCollege(storedCollege);
+    }
+  }, []);
+
+  useEffect(() => {
     const loadPlacements = async () => {
       setLoading(true);
       try {
         const res = await fetch(
-          `http://127.0.0.1:8000/placements/${college}`
+          `http://localhost:8000/placements/${encodeURIComponent(college)}`
         );
         const data = await res.json();
         setPlacementsData(data);
@@ -85,7 +93,11 @@ export default function Placements() {
 
       {/* COLLEGE SELECT */}
       <div className="max-w-xs">
-        <Select value={college} onValueChange={setCollege}>
+        <Select
+          value={college}
+          onValueChange={setCollege}
+          disabled={!!localStorage.getItem("college")} // 🔒 Lock if college is set
+        >
           <SelectTrigger>
             <SelectValue placeholder="Select College" />
           </SelectTrigger>
@@ -97,6 +109,11 @@ export default function Placements() {
             ))}
           </SelectContent>
         </Select>
+        {localStorage.getItem("college") && (
+          <p className="text-xs text-gray-500 mt-2">
+            🔒 Viewing restricted to your college
+          </p>
+        )}
       </div>
 
       {loading && <p className="text-white/60">Loading placement data...</p>}

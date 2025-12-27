@@ -19,9 +19,10 @@ const JobMatching = () => {
     // Check if resume exists (Mock check for now)
     // if (!localStorage.getItem("resumeUploaded")) return;
 
-    const email = localStorage.getItem("email") || "teja@gmail.com";
+    const uid = localStorage.getItem("uid"); // Use UID for Firebase lookup
+    if (!uid) return;
 
-    fetch(`http://127.0.0.1:8000/job-matches/${email}`)
+    fetch(`http://localhost:8000/job-matches/${uid}`)
       .then((res) => res.json())
       .then((data) => setJobs(data))
       .catch((err) => console.error(err));
@@ -61,13 +62,12 @@ const JobMatching = () => {
                     <Building size={24} className="text-emerald-400" />
                   </div>
                   <span
-                    className={`px-3 py-1 rounded-full text-xs font-bold ${
-                      job.match > 70
-                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                        : job.match > 40
+                    className={`px-3 py-1 rounded-full text-xs font-bold ${job.match > 70
+                      ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                      : job.match > 40
                         ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
                         : "bg-red-500/20 text-red-400 border border-red-500/30"
-                    }`}
+                      }`}
                   >
                     {job.match}% Match
                   </span>
@@ -89,7 +89,7 @@ const JobMatching = () => {
                   </div>
                 </div>
 
-                <Button 
+                <Button
                   className="w-full bg-gray-800 hover:bg-emerald-600 hover:text-white text-gray-300 transition-colors border border-gray-700"
                   onClick={() => setSelectedJob(job)}
                 >
@@ -105,7 +105,7 @@ const JobMatching = () => {
       {selectedJob && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
           <div className="bg-gray-900 border border-gray-800 w-full max-w-lg rounded-2xl p-6 shadow-2xl relative animate-in zoom-in-95">
-            <button 
+            <button
               onClick={() => setSelectedJob(null)}
               className="absolute top-4 right-4 p-2 bg-gray-800 rounded-full hover:bg-gray-700 text-gray-400"
             >
@@ -120,7 +120,7 @@ const JobMatching = () => {
                 </span>
               </div>
               <p className="text-lg text-gray-400 flex items-center gap-2">
-                <Building size={18} className="text-emerald-500"/> {selectedJob.company}
+                <Building size={18} className="text-emerald-500" /> {selectedJob.company}
               </p>
             </div>
 
@@ -128,13 +128,13 @@ const JobMatching = () => {
               <div className="p-4 bg-black/40 rounded-xl border border-gray-800">
                 <p className="text-gray-500 text-xs uppercase mb-1">Salary</p>
                 <p className="text-white font-medium flex items-center gap-1">
-                  <DollarSign size={14} className="text-green-400"/> {selectedJob.salary || "$100k - $130k"}
+                  <DollarSign size={14} className="text-green-400" /> {selectedJob.salary || "$100k - $130k"}
                 </p>
               </div>
               <div className="p-4 bg-black/40 rounded-xl border border-gray-800">
                 <p className="text-gray-500 text-xs uppercase mb-1">Location</p>
                 <p className="text-white font-medium flex items-center gap-1">
-                  <MapPin size={14} className="text-blue-400"/> {selectedJob.location || "Remote"}
+                  <MapPin size={14} className="text-blue-400" /> {selectedJob.location || "Remote"}
                 </p>
               </div>
             </div>
@@ -142,28 +142,28 @@ const JobMatching = () => {
             <div className="space-y-4 mb-8">
               <h3 className="text-sm font-semibold text-gray-300 uppercase">Description</h3>
               <p className="text-gray-400 text-sm leading-relaxed">
-                We are looking for a talented <b>{selectedJob.role}</b> to join our team at {selectedJob.company}. 
+                We are looking for a talented <b>{selectedJob.role}</b> to join our team at {selectedJob.company}.
                 You will be working on cutting-edge technologies and scaling our products to millions of users.
                 Your skills in Python, React, and Cloud infrastructure match our requirements perfectly.
               </p>
-              
+
               <h3 className="text-sm font-semibold text-gray-300 uppercase">Requirements</h3>
               <ul className="text-sm text-gray-400 space-y-2">
-                <li className="flex gap-2"><CheckCircle2 size={16} className="text-emerald-500"/> 3+ years of experience in related field</li>
-                <li className="flex gap-2"><CheckCircle2 size={16} className="text-emerald-500"/> Strong problem-solving skills</li>
-                <li className="flex gap-2"><CheckCircle2 size={16} className="text-emerald-500"/> Experience with Agile methodologies</li>
+                <li className="flex gap-2"><CheckCircle2 size={16} className="text-emerald-500" /> 3+ years of experience in related field</li>
+                <li className="flex gap-2"><CheckCircle2 size={16} className="text-emerald-500" /> Strong problem-solving skills</li>
+                <li className="flex gap-2"><CheckCircle2 size={16} className="text-emerald-500" /> Experience with Agile methodologies</li>
               </ul>
             </div>
 
             <div className="flex gap-3">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="flex-1 border-gray-700 hover:bg-gray-800 text-white"
                 onClick={() => setSelectedJob(null)}
               >
                 Close
               </Button>
-              <Button 
+              <Button
                 className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-900/20"
                 onClick={handleApply}
               >

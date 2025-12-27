@@ -37,14 +37,14 @@ const TextInterview = ({ initialDomain }: { initialDomain?: string }) => {
       const fetchQuestions = async (retryInfo = { canRetry: true }) => {
         setLoading(true);
         try {
-          const res = await fetch(`http://127.0.0.1:8000/interview-questions?domain=${encodeURIComponent(domain)}&level=${level}&limit=10`);
+          const res = await fetch(`http://localhost:8000/interview-questions?domain=${encodeURIComponent(domain)}&level=${level}&limit=10`);
           if (!res.ok) throw new Error("Failed to fetch");
           const data = await res.json();
 
           if (data.length === 0 && retryInfo.canRetry) {
             console.log("Empty DB detected. Attempting to seed...");
             // Auto-seed if empty
-            await fetch("http://127.0.0.1:8000/seed-questions", { method: "POST" });
+            await fetch("http://localhost:8000/seed-questions", { method: "POST" });
             // Retry once
             return fetchQuestions({ canRetry: false });
           }

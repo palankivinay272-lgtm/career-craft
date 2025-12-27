@@ -1,12 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { 
-  Sparkles, 
-  FileText, 
-  Target, 
-  BookOpen, 
-  MessageSquare, 
+import {
+  Sparkles,
+  FileText,
+  Target,
+  BookOpen,
+  MessageSquare,
   ArrowRight,
   Star,
   Users,
@@ -59,7 +59,7 @@ const Index = () => {
               Craft Your Career with AI
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              Transform your career journey with AI-powered tools for resume optimization, 
+              Transform your career journey with AI-powered tools for resume optimization,
               job matching, skill development, and interview preparation.
             </p>
           </div>
@@ -72,9 +72,10 @@ const Index = () => {
                 <ArrowRight className="h-5 w-5 ml-2" />
               </Button>
             </Link>
-            
+
             {/* This one can stay as /analyzer, or you can change it to /login if you want to protect it too */}
-            <Link to="/analyzer">
+            {/* Protected: Force user to login first */}
+            <Link to="/login">
               <Button variant="outline" size="lg" className="min-w-[200px]">
                 Try Resume Analyzer
               </Button>
@@ -133,7 +134,7 @@ const Index = () => {
                 Join thousands of professionals who have accelerated their career growth with CareerCraft's AI-powered platform.
               </p>
             </div>
-            
+
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               {/* UPDATED LINK: Now points to /login */}
               <Link to="/login">

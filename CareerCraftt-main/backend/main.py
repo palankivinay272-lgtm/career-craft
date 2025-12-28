@@ -17,6 +17,11 @@ from sklearn.metrics.pairwise import cosine_similarity
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 logger = logging.getLogger(__name__)
 
+# ---------------- FIREBASE INIT (Global) ----------------
+# Ensures Firebase is initialized when the server starts
+from firebase_config import firebase_client
+# --------------------------------------------------------
+
 app = FastAPI()
 
 # ---------------- CORS ----------------
@@ -427,6 +432,18 @@ def verify_user(data: TokenSchema, db: Session = Depends(get_db)):
                 
             user_ref.set(user_data, merge=True)
             logger.info(f"Synced user {email} to Firestore (College: {stored_college})")
+            
+            # 📧 send welcome email (Async to not block login)
+            try:
+                import email_service
+                email_service.send_email(
+                    to_email=email,
+                    subject="Welcome to CareerCraft! 🚀",
+                    body=f"Hello,\n\nWelcome back to CareerCraft! We are glad to have you.\n\nHappy Learning,\nThe CareerCraft Team"
+                )
+            except Exception as e:
+                logger.error(f"Email send failed: {e}")
+
     except Exception as e:
         logger.error(f"Failed to sync user to Firestore: {e}")
     # ------------------------------------------------
@@ -440,8 +457,40 @@ def verify_user(data: TokenSchema, db: Session = Depends(get_db)):
         "success": True, 
         "user": email.split("@")[0], 
         "email": email,
-        "college": stored_college # 🆕 Return college to frontend
+        "college": stored_college
     }
+
+@app.post("/forgot-password")
+async def forgot_password(request: dict):
+    """
+    Generates a Firebase Password Reset Link and sends it via Gmail SMTP.
+    Payload: {"email": "user@example.com"}
+    """
+    email = request.get("email")
+    if not email:
+        raise HTTPException(status_code=400, detail="Email is required")
+
+    try:
+        from firebase_admin import auth
+        import email_service
+
+        # 1. Generate Link
+        link = auth.generate_password_reset_link(email)
+        
+        # 2. Send Email
+        subject = "Reset your CareerCraft Password 🔒"
+        body = f"Hello,\n\nYou requested a password reset for your CareerCraft account.\n\nClick the link below to reset it:\n{link}\n\nIf you did not request this, please ignore this email.\n\n- CareerCraft Team"
+        
+        sent = email_service.send_email(email, subject, body)
+        
+        if sent:
+            return {"success": True, "message": "Reset link sent to your email."}
+        else:
+            return JSONResponse(status_code=500, content={"success": False, "message": "Failed to send email."})
+
+    except Exception as e:
+        logger.error(f"Forgot Password Error: {e}")
+        return JSONResponse(status_code=500, content={"success": False, "message": str(e)})
 
 # ---------------- RESUME ----------------
 @app.post("/analyze-resume")

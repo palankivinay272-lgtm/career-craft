@@ -18,11 +18,24 @@ export default function Login() {
       toast.error("Please enter your email first");
       return;
     }
+
+    // 🆕 Call Backend Custom Email Service
+    const toastId = toast.loading("Sending reset link...");
     try {
-      await sendPasswordResetEmail(auth, email);
-      toast.success("Password reset email sent!");
+      const res = await fetch("http://localhost:8000/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        toast.success("✅ Reset link sent to your email!", { id: toastId });
+      } else {
+        toast.error("Failed: " + data.message, { id: toastId });
+      }
     } catch (error: any) {
-      toast.error("Error: " + error.message);
+      toast.error("Server Error: " + error.message, { id: toastId });
     }
   };
 

@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route } from "react-router-dom"; // No BrowserRouter
 
 import Navigation from "./components/Navigation";
-import ProtectedRoute from "./components/ProtectedRoute"; 
+import ProtectedRoute from "./components/ProtectedRoute";
 import Footer from "./components/Footer"; // ✅ Import Footer
 
 import Index from "./pages/Index";
@@ -20,6 +20,7 @@ import Placements from "./pages/Placements";
 import AdminPlacements from "./pages/Adminplacements";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import ResumeBuilder from "./pages/ResumeBuilder";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,7 +41,7 @@ const App = () => (
             <Route path="/signup" element={<Signup />} />
 
             {/* --- PROTECTED ROUTES --- */}
-            
+
             <Route
               path="/dashboard"
               element={
@@ -57,6 +58,16 @@ const App = () => (
                 <ProtectedRoute>
                   <Navigation />
                   <ResumeAnalyzer />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/builder"
+              element={
+                <ProtectedRoute>
+                  <Navigation />
+                  <ResumeBuilder />
                 </ProtectedRoute>
               }
             />

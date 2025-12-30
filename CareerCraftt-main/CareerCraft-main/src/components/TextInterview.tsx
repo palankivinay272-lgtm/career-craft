@@ -113,6 +113,33 @@ const TextInterview = ({ initialDomain }: { initialDomain?: string }) => {
     }
   };
 
+  // --- SAVE RESULT ---
+  useEffect(() => {
+    if (step === "result") {
+      const saveToBackend = async () => {
+        const uid = localStorage.getItem("uid");
+        if (!uid) return;
+
+        try {
+           await fetch("http://localhost:8000/interview/complete", {
+             method: "POST",
+             headers: { "Content-Type": "application/json" },
+             body: JSON.stringify({
+               uid,
+               domain,
+               score,
+               total: questions.length
+             })
+           });
+           console.log("✅ Interview Saved");
+        } catch (e) {
+          console.error("Failed to save interview", e);
+        }
+      };
+      saveToBackend();
+    }
+  }, [step]); // Run once when step becomes result
+
   const resetQuiz = () => {
     setStep("setup");
     // Keep domain if passed as prop, else clear? User might want to change.

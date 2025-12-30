@@ -14,7 +14,16 @@ import {
   GraduationCap,
   Shield,
   LogOut,
+  PenTool,
+  ChevronDown,
 } from "lucide-react";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -42,17 +51,37 @@ const Navigation = () => {
     navigate("/login");
   };
 
-  const navItems = [
+  const isActive = (path: string) => location.pathname === path;
+
+  // Grouped Navigation Logic
+  const navGroups = [
     { name: "Dashboard", path: "/dashboard", icon: Home },
-    { name: "Resume Analyzer", path: "/analyzer", icon: FileText },
-    { name: "Job Matches", path: "/jobs", icon: Target },
-    { name: "Placements", path: "/placements", icon: GraduationCap },
-    { name: "Roadmaps", path: "/roadmaps", icon: BookOpen },
-    { name: "Mock Interview", path: "/interview", icon: MessageSquare },
+    {
+      name: "Resume Tools",
+      icon: FileText,
+      items: [
+        { name: "Resume Analyzer", path: "/analyzer", icon: FileText },
+        { name: "Resume Builder", path: "/builder", icon: PenTool },
+      ]
+    },
+    {
+      name: "Jobs & Placements",
+      icon: Target,
+      items: [
+        { name: "Job Matches", path: "/jobs", icon: Target },
+        { name: "Placements", path: "/placements", icon: GraduationCap },
+      ]
+    },
+    {
+      name: "Learn & Practice",
+      icon: BookOpen,
+      items: [
+        { name: "Roadmaps", path: "/roadmaps", icon: BookOpen },
+        { name: "Mock Interview", path: "/interview", icon: MessageSquare },
+      ]
+    },
     { name: "Profile", path: "/profile", icon: User },
   ];
-
-  const isActive = (path: string) => location.pathname === path;
 
   return (
     <nav className="glass-card border-b border-border/30 sticky top-0 z-50">
@@ -70,20 +99,46 @@ const Navigation = () => {
           </Link>
 
           {/* DESKTOP NAVIGATION */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 ${isActive(item.path)
-                  ? "bg-primary/20 text-primary neon-glow"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-                  }`}
-              >
-                <item.icon className="h-4 w-4" />
-                <span className="text-sm font-medium">{item.name}</span>
-              </Link>
-            ))}
+          <div className="hidden md:flex items-center space-x-6">
+            {navGroups.map((group, idx) => {
+              if (group.items) {
+                // Dropdown Item
+                return (
+                  <DropdownMenu key={idx}>
+                    <DropdownMenuTrigger className="flex items-center space-x-1 px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 outline-none transition-all">
+                      <group.icon className="h-4 w-4" />
+                      <span className="text-sm font-medium">{group.name}</span>
+                      <ChevronDown className="h-3 w-3 opacity-50" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="bg-black/90 border-white/10 backdrop-blur-xl">
+                      {group.items.map(subItem => (
+                        <DropdownMenuItem key={subItem.path} asChild>
+                          <Link to={subItem.path} className="flex items-center cursor-pointer">
+                            <subItem.icon className="h-4 w-4 mr-2" />
+                            <span>{subItem.name}</span>
+                          </Link>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )
+              } else {
+                // Single Item
+                return (
+                  <Link
+                    key={group.path}
+                    to={group.path!}
+                    className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 ${isActive(group.path!)
+                      ? "bg-primary/20 text-primary neon-glow"
+                      : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                      }`}
+                  >
+                    <group.icon className="h-4 w-4" />
+                    <span className="text-sm font-medium">{group.name}</span>
+                  </Link>
+                )
+              }
+            })}
 
             {/* 🛡️ ADMIN BUTTON (ONLY FOR ADMIN) */}
             {isAdmin && (
@@ -124,20 +179,45 @@ const Navigation = () => {
         {isMenuOpen && (
           <div className="md:hidden mt-4 pt-4 border-t border-border/30">
             <div className="flex flex-col space-y-2">
-              {navItems.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 ${isActive(item.path)
-                    ? "bg-primary/20 text-primary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-                    }`}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <item.icon className="h-5 w-5" />
-                  <span className="font-medium">{item.name}</span>
-                </Link>
-              ))}
+              {navGroups.map((group, idx) => {
+                if (group.items) {
+                  return (
+                    <div key={idx} className="space-y-1">
+                      <div className="px-3 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        {group.name}
+                      </div>
+                      {group.items.map(subItem => (
+                        <Link
+                          key={subItem.path}
+                          to={subItem.path}
+                          className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 ${isActive(subItem.path)
+                            ? "bg-primary/20 text-primary"
+                            : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                            }`}
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <subItem.icon className="h-5 w-5" />
+                          <span className="font-medium">{subItem.name}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  )
+                }
+                return (
+                  <Link
+                    key={group.path}
+                    to={group.path!}
+                    className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 ${isActive(group.path!)
+                      ? "bg-primary/20 text-primary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                      }`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <group.icon className="h-5 w-5" />
+                    <span className="font-medium">{group.name}</span>
+                  </Link>
+                )
+              })}
 
               {/* ADMIN (MOBILE) */}
               {isAdmin && (
@@ -169,5 +249,6 @@ const Navigation = () => {
     </nav>
   );
 };
+
 
 export default Navigation;

@@ -533,6 +533,16 @@ async def analyze_resume(
                     "job_role": job_description[:50] + "..." if len(job_description)>50 else job_description,
                     "missing_count": len(missing)
                 })
+            # 4. Award XP (Gamification)
+            user_ref = fs_db.collection("users").document(uid)
+            user_doc = user_ref.get()
+            current_xp = 0
+            if user_doc.exists:
+                current_xp = user_doc.to_dict().get("xp", 0)
+            
+            # +20 XP for Resume Analysis
+            new_xp = current_xp + 20
+            user_ref.update({"xp": new_xp})
         except Exception as e:
             print(f"Error saving to Firestore: {e}")
             
@@ -672,8 +682,68 @@ def job_matches(uid: str):
             jobs_data.append(doc.to_dict())
         print(f"✅ DEBUG: Fetched {len(jobs_data)} jobs from Firestore")
     else:
-        jobs_data = JOBS_DB # Fallback
+        jobs_data = JOBS_DB.copy() # Use copy to avoid mutating original
         print("⚠️ DEBUG: Using Fallback JOBS_DB")
+
+    # 3. [NEW] Inject PLACEMENT Jobs if User has a College
+    # Ensure 'data' exists (it typically does if resume_text was found, but be safe)
+    user_college = data.get("college") if 'data' in locals() and data else None
+    
+    if user_college:
+        print(f"🎓 DEBUG: User is from {user_college}. Looking for placements...")
+        
+        # 🩹 Normalize College Names (Handle Aliases & Case-Insensitivity)
+        # 1. Map known aliases
+        alias_map = {
+            "lpu": "Lovely Professional University",
+            "lpu university": "Lovely Professional University",
+            "iit bombay": "IIT Bombay",
+            "iit delhi": "IIT Delhi",
+            # Add more as needed
+        }
+        normalized_input = user_college.lower().strip()
+        
+        if normalized_input in alias_map:
+            user_college = alias_map[normalized_input]
+        
+        # 2. Case-Insensitive Lookup in PLACEMENTS_DB keys
+        # This ensures "iit bombay" matches "IIT Bombay" in the DB key
+        db_key = None
+        for key in PLACEMENTS_DB.keys():
+            if key.lower() == user_college.lower():
+                db_key = key
+                break
+        
+        # Use the matched DB key if found, otherwise keep original
+        search_key = db_key if db_key else user_college
+        
+        # Get placements (Firestore or Local)
+        placement_companies = []
+        if fs_db:
+            p_doc = fs_db.collection("placements").document(search_key).get()
+            if p_doc.exists:
+                placement_companies = p_doc.to_dict().get("companies", [])
+        
+        # Fallback to local if empty or no DB
+        if not placement_companies:
+            placement_companies = PLACEMENTS_DB.get(search_key, [])
+            
+        # Convert Placements to Jobs
+        for p in placement_companies:
+            # Create a job entry for each role
+            for role in p.get("roles", ["Graduate Trainee"]):
+                # Construct a "skill string" from domains
+                skill_str = " ".join(p.get("domains", [])).lower()
+                
+                jobs_data.append({
+                    "role": role,
+                    "company": p.get("company"),
+                    "skills": skill_str, # Use domains as skills for matching
+                    "location": f"On-Campus ({search_key})",
+                    "salary": "Placement Drive", # Special indicator
+                    "is_placement": True
+                })
+        print(f"✅ DEBUG: Added {len(placement_companies)} placement companies (from {search_key}) to matching pool")
 
     results = []
     for j in jobs_data:
@@ -692,3 +762,167 @@ def job_matches(uid: str):
     results.sort(key=lambda x: x["match"], reverse=True)
     
     return results
+
+# ---------------- INTERVIEW & DASHBOARD ----------------
+
+class InterviewSession(BaseModel):
+    uid: str
+    domain: str
+    score: int
+    total: int
+
+@app.post("/interview/complete")
+def save_interview(data: InterviewSession):
+    """
+    Saves interview session to Firestore.
+    """
+    from firebase_config import firebase_client
+    from firebase_admin import firestore
+    
+    fs_db = firebase_client.db
+    if not fs_db:
+        return {"error": "DB not initialized"}
+        
+    try:
+        # Save to users/{uid}/interviews collection
+        user_ref = fs_db.collection("users").document(data.uid)
+        user_ref.collection("interviews").add({
+            "domain": data.domain,
+            "score": data.score,
+            "total": data.total,
+            "timestamp": firestore.SERVER_TIMESTAMP
+        })
+        
+        # Award XP (+50 per interview)
+        user_doc = user_ref.get()
+        current_xp = 0
+        if user_doc.exists:
+            current_xp = user_doc.to_dict().get("xp", 0)
+            
+        new_xp = current_xp + 50
+        user_ref.update({"xp": new_xp})
+        
+        return {"success": True, "new_xp": new_xp}
+    except Exception as e:
+        print(f"Error saving interview: {e}")
+        return {"error": str(e)}
+
+@app.get("/dashboard-stats/{uid}")
+def get_dashboard_stats(uid: str):
+    """
+    Aggregates stats for the dashboard:
+    1. Resumes Analyzed (Count)
+    2. Practice Sessions (Count)
+    3. Average Score (Interview)
+    4. Recent Activity (Merged list)
+    """
+    from firebase_config import firebase_client
+    from firebase_admin import firestore
+    
+    fs_db = firebase_client.db
+    if not fs_db:
+        return {"error": "DB not initialized"}
+
+    stats = {
+        "resumes_analyzed": 0,
+        "first_resume_date": None,
+        "practice_sessions": 0,
+        "avg_score": 0,
+        "recent_activity": []
+    }
+    
+    try:
+        user_ref = fs_db.collection("users").document(uid)
+        
+        # 1. Fetch Resume Analysis History
+        resume_docs = user_ref.collection("analysis_history")\
+            .order_by("timestamp", direction=firestore.Query.DESCENDING)\
+            .limit(10).get()
+            
+        stats["resumes_analyzed"] = len(resume_docs) # Approx count based on recent history
+        
+        # 2. Fetch Interview History
+        interview_docs = user_ref.collection("interviews")\
+            .order_by("timestamp", direction=firestore.Query.DESCENDING)\
+            .limit(10).get()
+            
+        stats["practice_sessions"] = len(interview_docs)
+        
+        # Calculate Average Score
+        total_score = 0
+        total_max = 0
+        for doc in interview_docs:
+            d = doc.to_dict()
+            total_score += d.get("score", 0)
+            total_max += d.get("total", 10)
+            
+        if total_max > 0:
+            stats["avg_score"] = int((total_score / total_max) * 100)
+            
+        # 3. Merge Recent Activity
+        activity = []
+        
+        for doc in resume_docs:
+            d = doc.to_dict()
+            ts = d.get("timestamp")
+            if ts:
+                activity.append({
+                    "action": f"Analyzed Resume for {d.get('job_role', 'Job')}",
+                    "time": ts,
+                    "type": "resume"
+                })
+                
+        for doc in interview_docs:
+            d = doc.to_dict()
+            ts = d.get("timestamp")
+            if ts:
+                activity.append({
+                    "action": f"Completed {d.get('domain')} Quiz ({d.get('score')}/{d.get('total')})",
+                    "time": ts, # datetime object
+                    "type": "interview"
+                })
+                
+        # Sort by time desc
+        activity.sort(key=lambda x: x["time"], reverse=True)
+        
+        # Format time for frontend
+        formatted_activity = []
+        from datetime import datetime, timezone
+        
+        now = datetime.now(timezone.utc)
+        
+        for item in activity[:5]: # Top 5
+            # Simple "time ago" logic
+            diff = now - item["time"]
+            if diff.days > 0:
+                time_str = f"{diff.days} days ago"
+            elif diff.seconds > 3600:
+                time_str = f"{diff.seconds // 3600} hours ago"
+            else:
+                time_str = f"{diff.seconds // 60} mins ago"
+                
+            formatted_activity.append({
+                "action": item["action"],
+                "time": time_str
+            })
+            
+        stats["recent_activity"] = formatted_activity
+
+        # 4. Gamification Stats
+        user_doc = user_ref.get()
+        current_xp = 0
+        if user_doc.exists:
+            current_xp = user_doc.to_dict().get("xp", 0)
+            
+        # Level Logic: Level = XP // 500
+        level = (current_xp // 500) + 1
+        xp_next_level = 500
+        
+        stats["xp"] = current_xp
+        stats["level"] = level
+        stats["xp_progress"] = int((current_xp % 500) / 500 * 100)
+
+    except Exception as e:
+        print(f"Stats Error: {e}")
+        
+    return stats

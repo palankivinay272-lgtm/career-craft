@@ -50,34 +50,37 @@ const Index = () => {
       <section className="relative overflow-hidden py-20 px-6">
         <div className="max-w-6xl mx-auto text-center space-y-8">
           <div className="space-y-4">
-            <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center neon-glow">
-                <Sparkles className="h-8 w-8 text-white" />
+            <div className="flex justify-center mb-2">
+              <div className="p-3 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-sm animate-pulse-slow">
+                <Sparkles className="h-8 w-8 text-purple-400" />
               </div>
             </div>
-            <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent leading-tight">
-              Craft Your Career with AI
+            <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-white leading-tight">
+              Craft Your <br />
+              <span className="bg-gradient-to-r from-purple-400 via-pink-500 to-cyan-400 bg-clip-text text-transparent">
+                Future Career
+              </span>
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              Transform your career journey with AI-powered tools for resume optimization,
-              job matching, skill development, and interview preparation.
+            <p className="text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
+              The all-in-one AI platform to optimize your resume, master interviews, and
+              land your dream job faster than ever.
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            {/* UPDATED LINK: Now points to /login instead of /dashboard */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
+            {/* Primary CTA */}
             <Link to="/login">
-              <Button variant="hero" size="lg" className="min-w-[200px] hover-bounce">
+              <Button className="h-12 px-8 rounded-full bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white font-medium hover-lift transition-all duration-300">
                 Get Started Free
-                <ArrowRight className="h-5 w-5 ml-2" />
+                <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             </Link>
 
-            {/* This one can stay as /analyzer, or you can change it to /login if you want to protect it too */}
-            {/* Protected: Force user to login first */}
+            {/* Secondary CTA */}
             <Link to="/login">
-              <Button variant="outline" size="lg" className="min-w-[200px]">
-                Try Resume Analyzer
+              <Button variant="outline" className="h-12 px-8 rounded-full border-gray-800 bg-black/40 hover:bg-gray-900 text-gray-200 font-medium hover-lift transition-all duration-300">
+                <Sparkles className="h-4 w-4 mr-2 text-yellow-400" />
+                Try AI Tools
               </Button>
             </Link>
           </div>

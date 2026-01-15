@@ -13,6 +13,9 @@ from pdfminer.high_level import extract_text as pdf_extract_text
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
+import os
+import google.generativeai as genai
+
 # ---------------- LOGGING ----------------
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 logger = logging.getLogger(__name__)
@@ -21,6 +24,31 @@ logger = logging.getLogger(__name__)
 # Ensures Firebase is initialized when the server starts
 from firebase_config import firebase_client
 # --------------------------------------------------------
+
+# ---------------- GEMINI AI INIT ----------------
+# Try to get API key from environment, otherwise look for a hardcoded fallback or error
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+if not GEMINI_API_KEY:
+    # WARN: For development only. In production, use env vars.
+    # Check if user has a .env or if we should just warn
+    logger.warning("GEMINI_API_KEY not found in environment variables. Chat features may not work.")
+else:
+    genai.configure(api_key=GEMINI_API_KEY)
+
+# System instruction for CareerCraft context
+SYSTEM_INSTRUCTION = """
+You are CareerBot, the AI assistant for CareerCraft. 
+CareerCraft is an all-in-one platform for:
+1. Resume Analysis (ATS scoring)
+2. Job Matching (Software Engineering roles)
+3. Mock Interviews (Technical questions)
+4. Learning Roadmaps
+5. Placement Insights (College specific)
+
+Your role is to help users with career advice, technical concepts (Java, Python, Web Dev), 
+and navigation around the platform. Keep answers concise, professional, and encouraging.
+"""
 
 app = FastAPI()
 
@@ -32,6 +60,36 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ---------------- CHAT ENDPOINT ----------------
+class ChatRequest(BaseModel):
+    message: str
+    history: list = [] # Optional: list of previous messages for context
+
+@app.post("/chat")
+async def chat_endpoint(request: ChatRequest):
+    if not GEMINI_API_KEY:
+        # Fallback for when no API key is set
+        return {
+            "reply": "⚠️ I am currently in Offline Mode because the GEMINI_API_KEY is missing. Please set the API key in the backend environment to enable real AI responses."
+        }
+
+    try:
+        # Create a model instance
+        model = genai.GenerativeModel(
+            model_name="gemini-1.5-flash",
+            system_instruction=SYSTEM_INSTRUCTION
+        )
+
+        # Simple chat for now (stateless or minimal history)
+        # In a real app, we'd reconstruct the chat session
+        response = model.generate_content(request.message)
+        
+        return {"reply": response.text}
+    except Exception as e:
+        logger.error(f"Chat error: {e}")
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+# ---------------- SEED DATABASE ENDPOINT ----------------
 # ---------------- DATABASE ----------------
 DATABASE_URL = "sqlite:///./career.db"
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
@@ -122,6 +180,7 @@ PLACEMENTS_DB = {
     "Christ University": companies(),
     "Lovely Professional University": companies(),
     "SASTRA University": companies(),
+    "Anurag University": companies(),
 }
 
 # ---------------- ADMIN ----------------
@@ -460,6 +519,32 @@ def verify_user(data: TokenSchema, db: Session = Depends(get_db)):
         "college": stored_college
     }
 
+@app.post("/update-college")
+def update_college(data: TokenSchema):
+    from firebase_config import firebase_client
+    from firebase_admin import firestore
+    
+    decoded_token = firebase_client.verify_token(data.token)
+    if not decoded_token:
+        # Dev fallback
+        if data.token == "dev-token":
+            return {"success": True, "message": "Dev updated"}
+        return JSONResponse(status_code=401, content={"success": False, "message": "Invalid Token"})
+
+    uid = decoded_token.get("uid")
+    fs_db = firebase_client.db
+    
+    if fs_db:
+        try:
+            fs_db.collection("users").document(uid).set({
+                "college": data.college
+            }, merge=True)
+            return {"success": True, "message": "College updated"}
+        except Exception as e:
+            return JSONResponse(status_code=500, content={"error": str(e)})
+            
+    return {"success": False, "message": "DB not initialized"}
+
 @app.post("/forgot-password")
 async def forgot_password(request: dict):
     """
@@ -611,6 +696,8 @@ def debug_db():
 def trigger_seed():
     try:
         import seed_questions
+        import importlib
+        importlib.reload(seed_questions)
         seed_questions.seed_questions()
         return {"status": "success", "message": "Database seeded successfully"}
     except Exception as e:

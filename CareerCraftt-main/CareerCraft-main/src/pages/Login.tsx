@@ -85,6 +85,7 @@ export default function Login() {
         if (adminData.college) {
           localStorage.setItem("adminCollege", adminData.college);
         }
+        localStorage.removeItem("college"); // Ensure no user college is set
 
         toast.success("Admin login successful!");
         navigate("/admin");
@@ -117,6 +118,8 @@ export default function Login() {
 
         if (data.college) {
           localStorage.setItem("college", data.college); // 🆕 Save fetched college
+        } else {
+          localStorage.removeItem("college"); // Clear if no college associated
         }
 
       } catch (err) {

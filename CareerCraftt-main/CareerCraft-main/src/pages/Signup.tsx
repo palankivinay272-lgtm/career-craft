@@ -18,7 +18,7 @@ export default function Signup() {
     "NIT Trichy", "NIT Warangal", "NIT Surathkal", "BITS Pilani", "VIT Vellore",
     "SRM University", "Amity University", "Anna University", "JNTU Hyderabad",
     "Osmania University", "Manipal University", "PES University", "Christ University",
-    "Lovely Professional University", "SASTRA University"
+    "Lovely Professional University", "SASTRA University", "Anurag University"
   ];
 
   const handleKeyDown = (e: React.KeyboardEvent, target: string) => {

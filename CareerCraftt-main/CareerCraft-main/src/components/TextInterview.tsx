@@ -37,7 +37,7 @@ const TextInterview = ({ initialDomain }: { initialDomain?: string }) => {
       const fetchQuestions = async (retryInfo = { canRetry: true }) => {
         setLoading(true);
         try {
-          const res = await fetch(`http://localhost:8000/interview-questions?domain=${encodeURIComponent(domain)}&level=${level}&limit=10`);
+          const res = await fetch(`http://localhost:8000/interview-questions?domain=${encodeURIComponent(domain)}&level=${level}&limit=15`);
           if (!res.ok) throw new Error("Failed to fetch");
           const data = await res.json();
 
@@ -121,17 +121,17 @@ const TextInterview = ({ initialDomain }: { initialDomain?: string }) => {
         if (!uid) return;
 
         try {
-           await fetch("http://localhost:8000/interview/complete", {
-             method: "POST",
-             headers: { "Content-Type": "application/json" },
-             body: JSON.stringify({
-               uid,
-               domain,
-               score,
-               total: questions.length
-             })
-           });
-           console.log("✅ Interview Saved");
+          await fetch("http://localhost:8000/interview/complete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              uid,
+              domain,
+              score,
+              total: questions.length
+            })
+          });
+          console.log("✅ Interview Saved");
         } catch (e) {
           console.error("Failed to save interview", e);
         }

@@ -7,6 +7,7 @@ import { Routes, Route } from "react-router-dom"; // No BrowserRouter
 import Navigation from "./components/Navigation";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Footer from "./components/Footer"; // ✅ Import Footer
+import ChatBot from "./components/ChatBot";
 
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
@@ -150,6 +151,9 @@ const App = () => (
 
         {/* ✅ FOOTER ADDED HERE - Stays at bottom */}
         <Footer />
+
+        {/* 🤖 AI ChatBot (Global) */}
+        <ChatBot />
       </div>
 
     </TooltipProvider>

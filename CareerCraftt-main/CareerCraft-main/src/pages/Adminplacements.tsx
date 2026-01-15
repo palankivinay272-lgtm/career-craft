@@ -31,6 +31,7 @@ const COLLEGES = [
   "Christ University",
   "Lovely Professional University",
   "SASTRA University",
+  "Anurag University",
 ];
 
 export default function AdminPlacements() {

@@ -45,6 +45,7 @@ const COLLEGES = [
   "Christ University",
   "Lovely Professional University",
   "SASTRA University",
+  "Anurag University",
 ];
 
 export default function Placements() {
@@ -91,28 +92,46 @@ export default function Placements() {
         <p className="text-white/60">Company-wise placement insights</p>
       </div>
 
-      {/* COLLEGE SELECT */}
+      {/* COLLEGE SELECT OR TITLE */}
       <div className="max-w-xs">
-        <Select
-          value={college}
-          onValueChange={setCollege}
-          disabled={!!localStorage.getItem("college")} // 🔒 Lock if college is set
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select College" />
-          </SelectTrigger>
-          <SelectContent>
-            {COLLEGES.map((c) => (
-              <SelectItem key={c} value={c}>
-                {c}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {localStorage.getItem("college") && (
-          <p className="text-xs text-gray-500 mt-2">
-            🔒 Viewing restricted to your college
-          </p>
+        {localStorage.getItem("college") ? (
+          <div className="p-4 rounded-lg bg-purple-500/10 border border-purple-500/20">
+            <p className="text-sm text-gray-400">Viewing Insights for</p>
+            <h2 className="text-xl font-bold text-white">{college}</h2>
+          </div>
+        ) : (
+          <Select
+            value={college}
+            onValueChange={async (val) => {
+              setCollege(val);
+              // Save to localStorage immediately so UI updates
+              localStorage.setItem("college", val);
+
+              // 💾 Save to Backend if logged in
+              import("@/lib/firebase").then(async ({ auth }) => {
+                const user = auth.currentUser;
+                if (user) {
+                  const token = await user.getIdToken();
+                  await fetch("http://localhost:8000/update-college", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ token, college: val }),
+                  });
+                }
+              });
+            }}
+          >
+            <SelectTrigger className="border-gray-700 bg-gray-900/50">
+              <SelectValue placeholder="Select College" />
+            </SelectTrigger>
+            <SelectContent>
+              {COLLEGES.map((c) => (
+                <SelectItem key={c} value={c}>
+                  {c}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         )}
       </div>
 

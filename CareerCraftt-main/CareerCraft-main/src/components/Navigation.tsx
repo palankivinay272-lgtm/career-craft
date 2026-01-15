@@ -44,8 +44,11 @@ const Navigation = () => {
 
   const logout = () => {
     localStorage.removeItem("isAdmin");
+    localStorage.removeItem("adminCollege");
     localStorage.removeItem("email");
     localStorage.removeItem("user");
+    localStorage.removeItem("college");
+    localStorage.removeItem("uid");
     setIsAdmin(false);
     setIsLoggedIn(false);
     navigate("/login");
@@ -89,7 +92,7 @@ const Navigation = () => {
         <div className="flex items-center justify-between">
 
           {/* LOGO */}
-          <Link to="/" className="flex items-center space-x-2 hover-bounce">
+          <Link to={isLoggedIn ? "/dashboard" : "/"} className="flex items-center space-x-2 hover-bounce">
             <div className="w-8 h-8 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
               <Sparkles className="h-5 w-5 text-white" />
             </div>

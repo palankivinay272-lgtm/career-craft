@@ -25,6 +25,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -86,20 +94,115 @@ const Navigation = () => {
     { name: "Profile", path: "/profile", icon: User },
   ];
 
+  const resourceLinks = [
+    { name: "Career Blog", path: "/blog", icon: FileText },
+    { name: "Interview Tips", path: "/interview-tips", icon: MessageSquare },
+    { name: "Salary Guide", path: "/salary-guide", icon: Target },
+    { name: "Help Center", path: "/help", icon: BookOpen },
+  ];
+
   return (
     <nav className="glass-card border-b border-border/30 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
 
-          {/* LOGO */}
-          <Link to={isLoggedIn ? "/dashboard" : "/"} className="flex items-center space-x-2 hover-bounce">
-            <div className="w-8 h-8 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
-              <Sparkles className="h-5 w-5 text-white" />
-            </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              CareerCraft
-            </span>
-          </Link>
+          <div className="flex items-center gap-4">
+            {/* 👈 LEFT SIDE RESOURCES MENU */}
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="mr-2 text-muted-foreground hover:text-white">
+                  <Menu className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[300px] border-r border-white/10 bg-black/90 backdrop-blur-xl pt-10 overflow-y-auto">
+                <SheetHeader>
+                  <SheetTitle className="text-left text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent mb-6">
+                    Menu
+                  </SheetTitle>
+                </SheetHeader>
+                <div className="flex flex-col space-y-6">
+                  {/* MAIN NAV */}
+                  <div className="space-y-2">
+                    {navGroups.map((group, idx) => {
+                      if (group.items) {
+                        return (
+                          <div key={idx} className="space-y-1">
+                            <h4 className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-4">
+                              {group.name}
+                            </h4>
+                            {group.items.map(subItem => (
+                              <Link
+                                key={subItem.path}
+                                to={subItem.path}
+                                className={`flex items-center space-x-3 px-4 py-2 rounded-lg transition-all duration-200 ${isActive(subItem.path)
+                                    ? "bg-primary/20 text-primary"
+                                    : "text-muted-foreground hover:text-white hover:bg-white/5"
+                                  }`}
+                                onClick={() => setIsMenuOpen(false)}
+                              >
+                                <subItem.icon className="h-4 w-4" />
+                                <span className="font-medium text-sm">{subItem.name}</span>
+                              </Link>
+                            ))}
+                          </div>
+                        );
+                      }
+                      return (
+                        <Link
+                          key={group.path}
+                          to={group.path!}
+                          className={`flex items-center space-x-3 px-4 py-2 rounded-lg transition-all duration-200 ${isActive(group.path!)
+                              ? "bg-primary/20 text-primary"
+                              : "text-muted-foreground hover:text-white hover:bg-white/5"
+                            }`}
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <group.icon className="h-4 w-4" />
+                          <span className="font-medium text-sm">{group.name}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+
+                  {/* DIVIDER */}
+                  <div className="h-px bg-white/10 my-2" />
+
+                  {/* RESOURCES */}
+                  <div>
+                    <h4 className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                      Resources
+                    </h4>
+                    <div className="space-y-1">
+                      {resourceLinks.map((link) => (
+                        <Link
+                          key={link.path}
+                          to={link.path}
+                          className={`flex items-center space-x-3 px-4 py-2 rounded-lg transition-all duration-200 ${isActive(link.path)
+                              ? "bg-primary/20 text-primary border border-primary/20"
+                              : "text-muted-foreground hover:text-white hover:bg-white/5"
+                            }`}
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <link.icon className="h-4 w-4" />
+                          <span className="font-medium text-sm">{link.name}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
+
+            {/* LOGO */}
+            <Link to={isLoggedIn ? "/dashboard" : "/"} className="flex items-center space-x-2 hover-bounce">
+              <div className="w-8 h-8 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
+                <Sparkles className="h-5 w-5 text-white" />
+              </div>
+              <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                CareerCraft
+              </span>
+            </Link>
+          </div>
 
           {/* DESKTOP NAVIGATION */}
           <div className="hidden md:flex items-center space-x-6">

@@ -14,6 +14,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 import os
+from dotenv import load_dotenv
+load_dotenv()
 import google.generativeai as genai
 
 # ---------------- LOGGING ----------------
@@ -1013,3 +1015,48 @@ def get_dashboard_stats(uid: str):
         print(f"Stats Error: {e}")
         
     return stats
+
+# ---------------- ANSWER VALIDATION ----------------
+class ValidateRequest(BaseModel):
+    question: str
+    answer: str
+    domain: str
+
+@app.post("/validate-answer")
+async def validate_answer(request: ValidateRequest):
+    if not GEMINI_API_KEY:
+        return {"score": 0, "feedback": "AI key missing. Cannot validate answer."}
+
+    try:
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        
+        prompt = f"""
+        You are an expert technical interviewer for {request.domain}.
+        Question: "{request.question}"
+        Candidate Answer: "{request.answer}"
+        
+        Task:
+        1. Evaluate the answer for correctness, depth, and clarity.
+        2. Provide a score out of 10.
+        3. Provide constructive feedback (max 3 sentences).
+        
+        Output JSON format:
+        {{
+            "score": <number>,
+            "feedback": "<text>"
+        }}
+        """
+        
+        response = model.generate_content(prompt)
+        # Clean response to ensure it's valid JSON
+        text = response.text.strip()
+        if text.startswith("```json"):
+            text = text[7:-3].strip()
+        
+        import json
+        result = json.loads(text)
+        return result
+
+    except Exception as e:
+        logger.error(f"Validation Error: {e}")
+        return {"score": 0, "feedback": f"Error validating answer: {str(e)}"}

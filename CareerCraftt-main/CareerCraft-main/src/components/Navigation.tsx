@@ -105,27 +105,6 @@ const Navigation = () => {
     { name: "Help Center", path: "/help", icon: BookOpen },
   ];
 
-  const resourceLinks = [
-    { name: "Career Blog", path: "/blog", icon: FileText },
-    { name: "Interview Tips", path: "/interview-tips", icon: MessageSquare },
-    { name: "Salary Guide", path: "/salary-guide", icon: Target },
-    { name: "Help Center", path: "/help", icon: BookOpen },
-  ];
-
-  const resourceLinks = [
-    { name: "Career Blog", path: "/blog", icon: FileText },
-    { name: "Interview Tips", path: "/interview-tips", icon: MessageSquare },
-    { name: "Salary Guide", path: "/salary-guide", icon: Target },
-    { name: "Help Center", path: "/help", icon: BookOpen },
-  ];
-
-  const resourceLinks = [
-    { name: "Career Blog", path: "/blog", icon: FileText },
-    { name: "Interview Tips", path: "/interview-tips", icon: MessageSquare },
-    { name: "Salary Guide", path: "/salary-guide", icon: Target },
-    { name: "Help Center", path: "/help", icon: BookOpen },
-  ];
-
   return (
     <nav className="glass-card border-b border-border/30 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6 py-4">
@@ -160,8 +139,8 @@ const Navigation = () => {
                                 key={subItem.path}
                                 to={subItem.path}
                                 className={`flex items-center space-x-3 px-4 py-2 rounded-lg transition-all duration-200 ${isActive(subItem.path)
-                                    ? "bg-primary/20 text-primary"
-                                    : "text-muted-foreground hover:text-white hover:bg-white/5"
+                                  ? "bg-primary/20 text-primary"
+                                  : "text-muted-foreground hover:text-white hover:bg-white/5"
                                   }`}
                                 onClick={() => setIsMenuOpen(false)}
                               >
@@ -177,8 +156,8 @@ const Navigation = () => {
                           key={group.path}
                           to={group.path!}
                           className={`flex items-center space-x-3 px-4 py-2 rounded-lg transition-all duration-200 ${isActive(group.path!)
-                              ? "bg-primary/20 text-primary"
-                              : "text-muted-foreground hover:text-white hover:bg-white/5"
+                            ? "bg-primary/20 text-primary"
+                            : "text-muted-foreground hover:text-white hover:bg-white/5"
                             }`}
                           onClick={() => setIsMenuOpen(false)}
                         >
@@ -203,8 +182,8 @@ const Navigation = () => {
                           key={link.path}
                           to={link.path}
                           className={`flex items-center space-x-3 px-4 py-2 rounded-lg transition-all duration-200 ${isActive(link.path)
-                              ? "bg-primary/20 text-primary border border-primary/20"
-                              : "text-muted-foreground hover:text-white hover:bg-white/5"
+                            ? "bg-primary/20 text-primary border border-primary/20"
+                            : "text-muted-foreground hover:text-white hover:bg-white/5"
                             }`}
                           onClick={() => setIsMenuOpen(false)}
                         >
@@ -321,14 +300,14 @@ const Navigation = () => {
                         <Link
                           key={subItem.path}
                           to={subItem.path}
-                          className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 ${isActive(subItem.path)
+                          className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${isActive(subItem.path)
                             ? "bg-primary/20 text-primary"
-                            : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                            : "text-muted-foreground hover:bg-secondary/50"
                             }`}
                           onClick={() => setIsMenuOpen(false)}
                         >
-                          <subItem.icon className="h-5 w-5" />
-                          <span className="font-medium">{subItem.name}</span>
+                          <subItem.icon className="h-4 w-4" />
+                          <span className="text-sm font-medium">{subItem.name}</span>
                         </Link>
                       ))}
                     </div>
@@ -338,38 +317,26 @@ const Navigation = () => {
                   <Link
                     key={group.path}
                     to={group.path!}
-                    className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 ${isActive(group.path!)
+                    className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${isActive(group.path!)
                       ? "bg-primary/20 text-primary"
-                      : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                      : "text-muted-foreground hover:bg-secondary/50"
                       }`}
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    <group.icon className="h-5 w-5" />
-                    <span className="font-medium">{group.name}</span>
+                    <group.icon className="h-4 w-4" />
+                    <span className="text-sm font-medium">{group.name}</span>
                   </Link>
                 )
               })}
 
-              {/* ADMIN (MOBILE) */}
-              {isAdmin && (
-                <Link
-                  to="/admin"
-                  className="flex items-center space-x-3 px-3 py-3 rounded-lg text-yellow-400"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <Shield className="h-5 w-5" />
-                  <span className="font-medium">Admin</span>
-                </Link>
-              )}
-
-              {/* LOGOUT (MOBILE) - FOR ALL USERS */}
+              {/* Mobile Logout */}
               {isLoggedIn && (
                 <Button
                   variant="ghost"
-                  className="justify-start text-red-400"
+                  className="w-full justify-start text-red-400 hover:text-red-500"
                   onClick={logout}
                 >
-                  <LogOut className="h-5 w-5 mr-2" />
+                  <LogOut className="h-4 w-4 mr-2" />
                   Logout
                 </Button>
               )}
@@ -380,6 +347,5 @@ const Navigation = () => {
     </nav>
   );
 };
-
 
 export default Navigation;

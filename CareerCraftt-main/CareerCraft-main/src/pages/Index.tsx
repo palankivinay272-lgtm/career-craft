@@ -12,6 +12,9 @@ import {
   Users,
   TrendingUp
 } from "lucide-react";
+import TeamSection from "@/components/TeamSection";
+import ReviewsSection from "@/components/ReviewsSection";
+import FAQSection from "@/components/FAQSection";
 
 const Index = () => {
   const features = [
@@ -124,6 +127,11 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* New Sections */}
+      <TeamSection />
+      <ReviewsSection />
+      <FAQSection />
 
       {/* CTA Section */}
       <section className="py-20 px-6">

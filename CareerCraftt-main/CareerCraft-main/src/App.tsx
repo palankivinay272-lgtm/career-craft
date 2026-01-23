@@ -68,6 +68,8 @@ const App = () => (
               }
             />
 
+
+
             <Route
               path="/builder"
               element={
@@ -209,7 +211,7 @@ const App = () => (
       </div>
 
     </TooltipProvider>
-  </QueryClientProvider>
+  </QueryClientProvider >
 );
 
 export default App;

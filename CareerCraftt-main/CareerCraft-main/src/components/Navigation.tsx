@@ -65,9 +65,13 @@ const Navigation = () => {
   const isActive = (path: string) => location.pathname === path;
 
   // Grouped Navigation Logic
+  // Hide student features if on admin panel
+  const isAdminPath = location.pathname.startsWith("/admin");
+  const showStudentNav = !isAdmin && !isAdminPath;
+
   const navGroups = [
-    { name: "Dashboard", path: "/dashboard", icon: Home },
-    {
+    { name: "Dashboard", path: isAdminPath ? "/admin" : "/dashboard", icon: Home },
+    ...(showStudentNav ? [{
       name: "Resume Tools",
       icon: FileText,
       items: [
@@ -90,8 +94,29 @@ const Navigation = () => {
         { name: "Roadmaps", path: "/roadmaps", icon: BookOpen },
         { name: "Mock Interview", path: "/interview", icon: MessageSquare },
       ]
-    },
-    { name: "Profile", path: "/profile", icon: User },
+    }] : []),
+    // Admin specific Profile/Logout handled in footer logic or separate button
+  ];
+
+  const resourceLinks = [
+    { name: "Career Blog", path: "/blog", icon: FileText },
+    { name: "Interview Tips", path: "/interview-tips", icon: MessageSquare },
+    { name: "Salary Guide", path: "/salary-guide", icon: Target },
+    { name: "Help Center", path: "/help", icon: BookOpen },
+  ];
+
+  const resourceLinks = [
+    { name: "Career Blog", path: "/blog", icon: FileText },
+    { name: "Interview Tips", path: "/interview-tips", icon: MessageSquare },
+    { name: "Salary Guide", path: "/salary-guide", icon: Target },
+    { name: "Help Center", path: "/help", icon: BookOpen },
+  ];
+
+  const resourceLinks = [
+    { name: "Career Blog", path: "/blog", icon: FileText },
+    { name: "Interview Tips", path: "/interview-tips", icon: MessageSquare },
+    { name: "Salary Guide", path: "/salary-guide", icon: Target },
+    { name: "Help Center", path: "/help", icon: BookOpen },
   ];
 
   const resourceLinks = [

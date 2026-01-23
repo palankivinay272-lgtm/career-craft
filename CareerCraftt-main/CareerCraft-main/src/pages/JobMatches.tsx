@@ -11,6 +11,10 @@ interface Job {
   match: number;
   location?: string;
   salary?: string;
+  url?: string;     // URL to apply (LinkedIn)
+  source?: string;  // "LinkedIn" or "CareerCraft"
+  posted_at?: string; // ISO date
+  description?: string; // Auto-generated or fetched
 }
 
 const JobMatching = () => {
@@ -21,7 +25,6 @@ const JobMatching = () => {
   // Form State
   const [formData, setFormData] = useState({
     name: "",
-    email: "",
     email: "",
     phone: "",
     resume: "",
@@ -44,6 +47,13 @@ const JobMatching = () => {
   };
 
   const handleApplyClick = () => {
+    // If it has an external URL (LinkedIn, Naukri, Indeed, etc.), open in new tab
+    if (selectedJob?.url) {
+      window.open(selectedJob.url, "_blank");
+      toast.success(`Opening job on ${selectedJob.source || "External Site"}...`);
+      return;
+    }
+    // Else, internal apply
     setApplicationStep("form");
   };
 
@@ -144,7 +154,7 @@ const JobMatching = () => {
                 <Briefcase className="text-emerald-400 h-6 w-6" />
                 <div>
                   <h2 className="text-2xl font-bold text-white">Recommended Jobs</h2>
-                  <p className="text-sm text-gray-400">Curated matches based on your skills</p>
+                  <p className="text-sm text-gray-400">Fresh opportunities posted in the <b>last 3 days</b></p>
                 </div>
               </div>
 
@@ -170,9 +180,23 @@ const JobMatching = () => {
                       </span>
                     </div>
 
-                    <h2 className="text-xl font-semibold text-white mb-1">
-                      {job.role}
-                    </h2>
+                    <div className="flex justify-between items-start mb-1">
+                      <h2 className="text-xl font-semibold text-white">
+                        {job.role}
+                      </h2>
+                      {job.source && job.source !== "CareerCraft" && (
+                        <span className={`text-[10px] px-2 py-0.5 rounded uppercase font-bold tracking-wider border ${job.source === "LinkedIn" ? "bg-[#0077b5]/20 text-[#0077b5] border-[#0077b5]/30"
+                          : job.source === "Indeed" ? "bg-[#2164f3]/20 text-[#2164f3] border-[#2164f3]/30"
+                            : job.source === "Naukri" ? "bg-[#FF7555]/20 text-[#FF7555] border-[#FF7555]/30"
+                              : job.source === "Glassdoor" ? "bg-[#0CAA41]/20 text-[#0CAA41] border-[#0CAA41]/30"
+                                : job.source === "Apna" ? "bg-[#be5cff]/20 text-[#be5cff] border-[#be5cff]/30"
+                                  : job.source === "Official Site" ? "bg-purple-500/20 text-purple-400 border-purple-500/30"
+                                    : "bg-gray-500/20 text-gray-400 border-gray-500/30"
+                          }`}>
+                          {job.source}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-gray-400 text-sm mb-4">{job.company}</p>
 
                     <div className="space-y-2 text-sm text-gray-500 mb-6">
@@ -244,11 +268,17 @@ const JobMatching = () => {
 
                 <div className="space-y-4 mb-8">
                   <h3 className="text-sm font-semibold text-gray-300 uppercase">Description</h3>
-                  <p className="text-gray-400 text-sm leading-relaxed">
-                    We are looking for a talented <b>{selectedJob.role}</b> to join our team at {selectedJob.company}.
-                    You will be working on cutting-edge technologies and scaling our products to millions of users.
-                    Your skills in Python, React, and Cloud infrastructure match our requirements perfectly.
-                  </p>
+                  <div className="text-gray-400 text-sm leading-relaxed whitespace-pre-wrap">
+                    {selectedJob.description ? (
+                      <div dangerouslySetInnerHTML={{ __html: selectedJob.description.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br />') }} />
+                    ) : (
+                      <p>
+                        We are looking for a talented <b>{selectedJob.role}</b> to join our team at {selectedJob.company}.
+                        You will be working on cutting-edge technologies and scaling our products to millions of users.
+                        Your skills in Python, React, and Cloud infrastructure match our requirements perfectly.
+                      </p>
+                    )}
+                  </div>
 
                   <h3 className="text-sm font-semibold text-gray-300 uppercase">Requirements</h3>
                   <ul className="text-sm text-gray-400 space-y-2">
@@ -270,7 +300,7 @@ const JobMatching = () => {
                     className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-900/20"
                     onClick={handleApplyClick}
                   >
-                    Apply Now 🚀
+                    Apply Now {selectedJob.source ? `on ${selectedJob.source} ↗` : "🚀"}
                   </Button>
                 </div>
               </>

@@ -3,6 +3,9 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Upload, Target, BookOpen, MessageSquare, BarChart3, Clock, PenTool, GraduationCap } from "lucide-react";
 import { Link } from "react-router-dom";
+import TeamSection from "@/components/TeamSection";
+import ReviewsSection from "@/components/ReviewsSection";
+import FAQSection from "@/components/FAQSection";
 
 const Dashboard = () => {
   const [stats, setStats] = useState<any>(null);
@@ -217,6 +220,7 @@ const Dashboard = () => {
           </Card>
         </div>
 
+
         {/* Recent Activity */}
         <Card className="glass-card p-8 border-white/10">
           <h3 className="text-xl font-semibold mb-4 text-white">Recent Activity</h3>
@@ -233,6 +237,13 @@ const Dashboard = () => {
             )}
           </div>
         </Card>
+
+        {/* Extra Sections (Team, Reviews, FAQ) */}
+        <div className="space-y-12">
+          <TeamSection />
+          <ReviewsSection />
+          <FAQSection />
+        </div>
       </div>
     </div>
   );

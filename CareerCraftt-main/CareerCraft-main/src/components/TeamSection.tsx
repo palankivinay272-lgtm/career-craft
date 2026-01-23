@@ -1,75 +1,92 @@
-import { Card } from "@/components/ui/card";
 import { Github, Linkedin, Twitter } from "lucide-react";
+import avinashImg from "../assets/avinash.jpeg";
+import tejaImg from "../assets/teja.jpg";
+import vinayImg from "../assets/vinay.jpg";
 
 const TeamSection = () => {
     const team = [
         {
-            name: "Alex Johnson",
+            name: "Avinash Kotavenuka",
             role: "Founder & CEO",
-            image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=500&h=500&fit=crop",
+            image: avinashImg,
             bio: "Visionary leader passionate about AI and career development."
         },
         {
-            name: "Sarah Chen",
+            name: "Palanki Vinay",
             role: "CTO",
-            image: "https://images.unsplash.com/photo-1573496359-136d4755f3dc?w=500&h=500&fit=crop",
+            image: vinayImg,
             bio: "Tech innovator with 10+ years in machine learning and scalable systems."
         },
         {
-            name: "Michael Davis",
+            name: "Teja Vardhan",
             role: "Head of Product",
-            image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=500&h=500&fit=crop",
+            image: tejaImg,
             bio: "Product strategist focused on creating intuitive user experiences."
-        },
-        {
-            name: "Emily Wilson",
-            role: "Lead Designer",
-            image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=500&h=500&fit=crop",
-            bio: "Creative mind crafting beautiful and accessible interfaces."
         }
     ];
 
     return (
-        <section className="py-20 px-6 bg-black/20">
+        <section className="py-24 px-6 relative overflow-hidden">
+            {/* Dynamic Background */}
+            <div className="absolute top-10 left-10 w-72 h-72 bg-purple-600/20 rounded-full blur-[100px] -z-10 animate-pulse-slow" />
+            <div className="absolute bottom-10 right-10 w-72 h-72 bg-cyan-600/20 rounded-full blur-[100px] -z-10 animate-pulse-slow delay-1000" />
+
             <div className="max-w-6xl mx-auto">
-                <div className="text-center space-y-4 mb-16">
-                    <h2 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                        Meet Our Team
+                <div className="text-center space-y-4 mb-20">
+                    <h2 className="text-5xl font-bold bg-gradient-to-r from-violet-400 via-fuchsia-400 to-cyan-400 bg-clip-text text-transparent">
+                        The Minds Behind The Magic
                     </h2>
-                    <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                        The passionate minds behind CareerCraft dedicated to your success.
+                    <p className="text-lg text-gray-400 max-w-2xl mx-auto font-light">
+                        Innovators, dreamers, and builders crafting the future of your career.
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
                     {team.map((member, index) => (
-                        <Card key={index} className="glass-card p-0 overflow-hidden group hover-lift border-white/5">
-                            <div className="relative aspect-square overflow-hidden">
-                                <img
-                                    src={member.image}
-                                    alt={member.name}
-                                    className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-6">
-                                    <div className="flex gap-4">
-                                        <a href="#" className="p-2 bg-white/10 rounded-full hover:bg-white/20 hover:text-white transition-colors">
-                                            <Linkedin size={20} />
-                                        </a>
-                                        <a href="#" className="p-2 bg-white/10 rounded-full hover:bg-white/20 hover:text-white transition-colors">
-                                            <Twitter size={20} />
-                                        </a>
-                                        <a href="#" className="p-2 bg-white/10 rounded-full hover:bg-white/20 hover:text-white transition-colors">
-                                            <Github size={20} />
-                                        </a>
-                                    </div>
+                        <div key={index} className="group relative">
+                            {/* Glowing effect on hover */}
+                            <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-2xl opacity-50 group-hover:opacity-100 blur transition duration-500"></div>
+
+                            {/* Card Content */}
+                            <div className="relative h-full bg-black rounded-2xl p-6 flex flex-col items-center text-center transition-transform duration-500 group-hover:-translate-y-2 border border-white/10">
+
+                                {/* Image Container */}
+                                <div className="relative w-40 h-40 mb-6 rounded-full p-1 bg-gradient-to-tr from-purple-500 to-cyan-500">
+                                    <img
+                                        src={member.image}
+                                        alt={member.name}
+                                        className="w-full h-full object-cover rounded-full border-4 border-black transition-transform duration-500 group-hover:scale-105"
+                                    />
+                                    {/* Decoration */}
+                                    <div className="absolute bottom-2 right-2 w-6 h-6 bg-green-500 rounded-full border-4 border-black z-10 box-content"></div>
+                                </div>
+
+                                <h3 className="text-2xl font-bold text-white mb-1 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-purple-400 group-hover:to-pink-400 transition-colors">
+                                    {member.name}
+                                </h3>
+
+                                <span className="inline-block px-3 py-1 bg-white/5 rounded-full text-xs font-medium text-cyan-400 mb-4 border border-cyan-500/20">
+                                    {member.role}
+                                </span>
+
+                                <p className="text-gray-400 text-sm leading-relaxed mb-6 flex-grow">
+                                    {member.bio}
+                                </p>
+
+                                {/* Social Links - Reveal on Hover */}
+                                <div className="flex gap-4 pt-6 border-t border-white/5 w-full justify-center">
+                                    <a href="#" className="transform transition-all duration-300 hover:scale-125 hover:text-blue-400 text-gray-500">
+                                        <Linkedin size={20} />
+                                    </a>
+                                    <a href="#" className="transform transition-all duration-300 hover:scale-125 hover:text-sky-400 text-gray-500">
+                                        <Twitter size={20} />
+                                    </a>
+                                    <a href="#" className="transform transition-all duration-300 hover:scale-125 hover:text-white text-gray-500">
+                                        <Github size={20} />
+                                    </a>
                                 </div>
                             </div>
-                            <div className="p-6 text-center space-y-2">
-                                <h3 className="text-xl font-bold text-white">{member.name}</h3>
-                                <p className="text-purple-400 font-medium text-sm">{member.role}</p>
-                                <p className="text-gray-400 text-sm line-clamp-2">{member.bio}</p>
-                            </div>
-                        </Card>
+                        </div>
                     ))}
                 </div>
             </div>

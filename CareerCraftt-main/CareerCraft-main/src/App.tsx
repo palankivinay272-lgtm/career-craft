@@ -23,6 +23,11 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ResumeBuilder from "./pages/ResumeBuilder";
 import NotFound from "./pages/NotFound";
+import CareerBlog from "./pages/CareerBlog";
+import InterviewTips from "./pages/InterviewTips";
+import SalaryGuide from "./pages/SalaryGuide";
+import HelpCenter from "./pages/HelpCenter";
+import InterviewTopicDetail from "./pages/InterviewTopicDetail";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +67,8 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+
+
 
             <Route
               path="/builder"
@@ -144,6 +151,53 @@ const App = () => (
               }
             />
 
+            {/* Resources Routes */}
+            <Route
+              path="/blog"
+              element={
+                <ProtectedRoute>
+                  <Navigation />
+                  <CareerBlog />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/interview-tips"
+              element={
+                <ProtectedRoute>
+                  <Navigation />
+                  <InterviewTips />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/interview-tips/:topicId"
+              element={
+                <ProtectedRoute>
+                  <Navigation />
+                  <InterviewTopicDetail />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/salary-guide"
+              element={
+                <ProtectedRoute>
+                  <Navigation />
+                  <SalaryGuide />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/help"
+              element={
+                <ProtectedRoute>
+                  <Navigation />
+                  <HelpCenter />
+                </ProtectedRoute>
+              }
+            />
+
             {/* 404 */}
             <Route path="*" element={<NotFound />} />
           </Routes>
@@ -157,7 +211,7 @@ const App = () => (
       </div>
 
     </TooltipProvider>
-  </QueryClientProvider>
+  </QueryClientProvider >
 );
 
 export default App;

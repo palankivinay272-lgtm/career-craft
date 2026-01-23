@@ -8,8 +8,9 @@ export default function Signup() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // 🆕
+  const [showPassword, setShowPassword] = useState(false);
   const [college, setCollege] = useState("");
+  const [role, setRole] = useState("student"); // Default to student
   const [loading, setLoading] = useState(false);
 
   // List of Colleges (Shared with Placements.tsx - simplified for now)
@@ -50,13 +51,13 @@ export default function Signup() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       console.log("Registered:", userCredential.user);
 
-      // Sync with Backend (Sending token + college)
+      // Sync with Backend (Sending token + college + role)
       try {
         const token = await userCredential.user.getIdToken();
         await fetch("http://localhost:8000/verify-token", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token, college }),
+          body: JSON.stringify({ token, college, role }),
         });
       } catch (err) {
         console.error("Backend Sync Failed:", err);
@@ -69,8 +70,10 @@ export default function Signup() {
       localStorage.setItem("email", userCredential.user.email || "");
       localStorage.setItem("uid", userCredential.user.uid);
       localStorage.setItem("college", college);
+      localStorage.setItem("role", role); // Save role locally
+      if (role === 'admin') localStorage.setItem("isAdmin", "true");
 
-      navigate("/dashboard");
+      navigate(role === 'admin' ? "/admin-dashboard" : "/dashboard");
 
     } catch (error: any) {
       console.error("Signup Error:", error);
@@ -143,10 +146,9 @@ export default function Signup() {
         {/* College Selection */}
         <select
           id="college-select" // 🆕
-          className="w-full mb-6 rounded-lg bg-black/60 border border-white/10 px-4 py-2 outline-none focus:border-purple-500 text-white/80"
+          className="w-full mb-4 rounded-lg bg-black/60 border border-white/10 px-4 py-2 outline-none focus:border-purple-500 text-white/80"
           value={college}
           onChange={(e) => setCollege(e.target.value)}
-          onKeyDown={(e) => handleKeyDown(e, "submit")} // 🆕
         >
           <option value="" disabled>Select your College</option>
           {COLLEGES.map((c) => (
@@ -155,6 +157,24 @@ export default function Signup() {
             </option>
           ))}
         </select>
+
+        {/* Role Selection */}
+        <div className="flex gap-4 mb-6">
+          <button
+            type="button"
+            onClick={() => setRole("student")}
+            className={`flex-1 py-2 rounded-lg border ${role === 'student' ? 'bg-purple-500/20 border-purple-500 text-purple-300' : 'border-white/10 text-gray-400'}`}
+          >
+            Student
+          </button>
+          <button
+            type="button"
+            onClick={() => setRole("admin")}
+            className={`flex-1 py-2 rounded-lg border ${role === 'admin' ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300' : 'border-white/10 text-gray-400'}`}
+          >
+            Admin
+          </button>
+        </div>
 
         {/* Button */}
         <button

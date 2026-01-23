@@ -12,6 +12,7 @@ interface ProfileData {
   github: string;
   linkedin: string;
   targetRole: string;
+  photoURL?: string;
 }
 
 const Profile = () => {
@@ -25,6 +26,7 @@ const Profile = () => {
     github: "",
     linkedin: "",
     targetRole: "",
+    photoURL: ""
   });
 
   /* =========================
@@ -93,6 +95,32 @@ const Profile = () => {
     }
   };
 
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // Limit to 5MB
+        toast({
+          variant: "destructive",
+          title: "File too large",
+          description: "Please upload an image smaller than 5MB.",
+        });
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        setProfile(prev => ({ ...prev, photoURL: result }));
+        setIsEditing(true); // Automatically switch to edit mode
+        toast({
+          title: "Photo updated",
+          description: "Click 'Save Changes' to make it permanent.",
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-black text-white p-4 md:p-8 flex justify-center">
       <div className="max-w-4xl w-full space-y-8">
@@ -103,14 +131,37 @@ const Profile = () => {
 
             {/* Avatar */}
             <div className="flex flex-col items-center space-y-4">
-              <div className="w-32 h-32 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 p-1">
-                <div className="w-full h-full bg-gray-900 rounded-full flex items-center justify-center">
-                  <User size={64} className="text-gray-400" />
+              <div className="w-64 h-64 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 p-1 relative overflow-hidden">
+                <div className="w-full h-full bg-gray-900 rounded-full flex items-center justify-center overflow-hidden">
+                  {profile.photoURL ? (
+                    <img
+                      src={profile.photoURL}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        toast({ title: "Error loading image", variant: "destructive" });
+                      }}
+                    />
+                  ) : (
+                    <User size={128} className="text-gray-400" />
+                  )}
                 </div>
               </div>
-              <Button variant="outline" disabled>
-                Change Photo
-              </Button>
+              <div className="relative">
+                <input
+                  type="file"
+                  id="photo-upload"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handlePhotoUpload}
+                />
+                <label htmlFor="photo-upload">
+                  <Button variant="outline" asChild className="cursor-pointer hover:bg-white/10">
+                    <span>Change Photo</span>
+                  </Button>
+                </label>
+              </div>
             </div>
 
             {/* Form */}

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 
 const Footer = () => {
   const location = useLocation();
-  
+
   // 🙈 Only hide footer on Login and Signup pages (Removed "/" so it shows on Home)
   if (["/login", "/signup"].includes(location.pathname)) {
     return null;
@@ -15,7 +15,7 @@ const Footer = () => {
     <footer className="border-t border-white/10 bg-black/40 backdrop-blur-xl mt-auto">
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
-          
+
           {/* 🌟 Brand Section */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
@@ -51,10 +51,10 @@ const Footer = () => {
           <div>
             <h3 className="text-white font-semibold mb-4">Resources</h3>
             <ul className="space-y-2 text-sm text-gray-400">
-              <FooterLink to="#">Career Blog</FooterLink>
-              <FooterLink to="#">Interview Tips</FooterLink>
-              <FooterLink to="#">Salary Guide</FooterLink>
-              <FooterLink to="#">Help Center</FooterLink>
+              <FooterLink to="/blog">Career Blog</FooterLink>
+              <FooterLink to="/interview-tips">Interview Tips</FooterLink>
+              <FooterLink to="/salary-guide">Salary Guide</FooterLink>
+              <FooterLink to="/help">Help Center</FooterLink>
             </ul>
           </div>
 
@@ -65,8 +65,8 @@ const Footer = () => {
               Get the latest career trends directly in your inbox.
             </p>
             <div className="flex gap-2">
-              <Input 
-                placeholder="Enter email" 
+              <Input
+                placeholder="Enter email"
                 className="bg-black/50 border-white/10 text-white focus:border-purple-500"
               />
               <Button className="bg-purple-600 hover:bg-purple-700 text-white">

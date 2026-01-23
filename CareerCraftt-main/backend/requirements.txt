@@ -1,9 +1,13 @@
 firebase-admin
 fastapi
-uvicorn
-sqlalchemy
 pdfminer.six
 scikit-learn
-python-multipart
+uvicorn
+sqlalchemy
 spacy
 numpy
+python-docx
+pypdf
+google-genai
+requests
+python-dotenv

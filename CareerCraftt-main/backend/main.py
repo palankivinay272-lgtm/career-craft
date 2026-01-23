@@ -15,10 +15,12 @@ import re
 import spacy
 from pdfminer.high_level import extract_text as pdf_extract_text
 from sklearn.feature_extraction.text import TfidfVectorizer
+
 from sklearn.metrics.pairwise import cosine_similarity
-
-
-
+import os
+from dotenv import load_dotenv
+load_dotenv()
+import google.generativeai as genai
 
 # ---------------- LOGGING ----------------
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
@@ -30,15 +32,30 @@ from firebase_config import firebase_client
 # --------------------------------------------------------
 
 # ---------------- GEMINI AI INIT ----------------
-# Try to get API key from environment, otherwise look for a hardcoded fallback or error
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+# Load .env manually for development convenience
+try:
+    with open(".env", "r") as f:
+        for line in f:
+            if line.strip() and not line.startswith("#"):
+                key, value = line.strip().split("=", 1)
+                os.environ[key] = value
+                if key == "GEMINI_API_KEY":
+                   print(f"🔑 Loaded API Key from .env (Length: {len(value)})")
+except FileNotFoundError:
+    pass
 
-if not GEMINI_API_KEY:
-    # WARN: For development only. In production, use env vars.
-    # Check if user has a .env or if we should just warn
-    logger.warning("GEMINI_API_KEY not found in environment variables. Chat features may not work.")
+import requests
+import json
+from ai_resume_service import analyze_resume_gemini
+from ai_insight_service import generate_market_intelligence
+
+# Try to get API key from environment
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
+if not GROQ_API_KEY:
+    logger.warning("GROQ_API_KEY not found in environment variables. Chat features may not work.")
 else:
-    genai.configure(api_key=GEMINI_API_KEY)
+    print(f"🔑 Loaded Groq API Key (Length: {len(GROQ_API_KEY)})")
 
 # System instruction for CareerCraft context
 SYSTEM_INSTRUCTION = """
@@ -71,27 +88,39 @@ class ChatRequest(BaseModel):
 
 @app.post("/chat")
 async def chat_endpoint(request: ChatRequest):
-    if not GEMINI_API_KEY:
-        # Fallback for when no API key is set
+    if not GROQ_API_KEY:
         return {
-            "reply": "⚠️ I am currently in Offline Mode because the GEMINI_API_KEY is missing. Please set the API key in the backend environment to enable real AI responses."
+            "reply": "⚠️ I am currently in Offline Mode because the GROQ_API_KEY is missing."
         }
 
-    try:
-        # Create a model instance
-        model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash",
-            system_instruction=SYSTEM_INSTRUCTION
-        )
+    url = "https://api.groq.com/openai/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {GROQ_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    messages = [{"role": "system", "content": SYSTEM_INSTRUCTION}]
+    messages.append({"role": "user", "content": request.message})
 
-        # Simple chat for now (stateless or minimal history)
-        # In a real app, we'd reconstruct the chat session
-        response = model.generate_content(request.message)
+    data = {
+        "model": "llama-3.3-70b-versatile",
+        "messages": messages,
+        "temperature": 0.7
+    }
+
+    try:
+        response = requests.post(url, headers=headers, json=data, timeout=10)
         
-        return {"reply": response.text}
+        if response.status_code == 200:
+            result = response.json()
+            reply = result['choices'][0]['message']['content']
+            return {"reply": reply}
+        else:
+            return {"reply": f"Error from Groq AI: {response.text}"}
+
     except Exception as e:
-        logger.error(f"Chat error: {e}")
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        logger.error(f"Chat Error: {e}")
+        return {"reply": "Sorry, I encountered an error connecting to the AI."}
 
 # ---------------- SEED DATABASE ENDPOINT ----------------
 # ---------------- DATABASE ----------------
@@ -134,19 +163,111 @@ class AdminPlacement(BaseModel):
     domains: list[str]
     roles: list[str]
 
+class JobSchema(BaseModel):
+    role: str
+    company: str
+    skills: str
+    location: str
+    salary: str
+
+# ---------------- PLACEMENTS DATA (20 COLLEGES × 10 COMPANIES) ----------------
+# ... (Placement code remains)
+
+# ---------------- ADMIN - USERS & JOBS ----------------
+# ---------------- ADMIN - USERS & JOBS ----------------
+@app.get("/admin/users")
+def get_all_users(college: str = None):
+    """Fetch users. If college provided, filter by it."""
+    from firebase_config import firebase_client
+    fs_db = firebase_client.db
+    users_list = []
+    
+    if fs_db:
+        try:
+            users_ref = fs_db.collection("users")
+            
+            # Application Logic: Filter if college is specified and not "All"
+            # Adjust "ABC College" logic if that is your Super Admin marker
+            if college and college != "ABC College": 
+                # Note: This requires an index in Firestore if you have many users
+                # For small data, stream() and filter in python is safer/easier initially
+                # query = users_ref.where("college", "==", college) 
+                pass
+
+            docs = users_ref.stream()
+            for doc in docs:
+                u = doc.to_dict()
+                u_college = u.get("college", "N/A")
+                
+                # Manual filtering to avoid index issues for now
+                if college and college != "ABC College" and u_college != college:
+                    continue
+                    
+                users_list.append({
+                    "uid": u.get("uid"),
+                    "email": u.get("email", "Unknown"),
+                    "college": u_college,
+                    "role": u.get("role", "student"),
+                    "lastLogin": u.get("lastLogin", "N/A")
+                })
+        except Exception as e:
+            print(f"Error fetching users: {e}")
+            
+    return users_list
+
+@app.post("/admin/jobs")
+def add_job(job: JobSchema):
+    """Admin adds a new job to Firestore"""
+    from firebase_config import firebase_client
+    fs_db = firebase_client.db
+    
+    if fs_db:
+        try:
+            # Add to 'jobs' collection
+            fs_db.collection("jobs").add(job.dict())
+            return {"success": True, "message": "Job posted successfully"}
+        except Exception as e:
+            return JSONResponse(status_code=500, content={"error": str(e)})
+    return {"error": "DB not initialized"}
+
+@app.delete("/admin/jobs/{job_id}")
+def delete_job(job_id: str):
+    """Admin deletes a job"""
+    from firebase_config import firebase_client
+    fs_db = firebase_client.db
+    if fs_db:
+        fs_db.collection("jobs").document(job_id).delete()
+        return {"success": True}
+    return {"error": "DB not initialized"}
+
+@app.get("/jobs")
+def get_jobs():
+    """Fetch jobs for Students (merged with DB)"""
+    from firebase_config import firebase_client
+    fs_db = firebase_client.db
+    final_jobs = []
+    
+    # 1. Fetch from Firestore (Dynamic Jobs)
+    if fs_db:
+        try:
+            docs = fs_db.collection("jobs").stream()
+            for doc in docs:
+                j = doc.to_dict()
+                j["id"] = doc.id # Include ID for deletion/key
+                final_jobs.append(j)
+        except Exception as e:
+            print(f"Error fetching DB jobs: {e}")
+
+    # 2. Append Hardcoded Jobs - CLEARED as per user request
+    for i, job in enumerate(JOBS_DB):
+         j = job.copy()
+         j["id"] = f"legacy_{i}"
+         final_jobs.append(j)
+         
+    return final_jobs
+
 # ---------------- JOB DATA ----------------
-JOBS_DB = [
-    {"role": "Python Backend Developer", "company": "TechNova", "skills": "python django fastapi sql api", "location": "Remote", "salary": "$120k - $150k"},
-    {"role": "Full Stack Developer", "company": "Webify", "skills": "react node python mongodb typescript", "location": "San Francisco, CA", "salary": "$130k - $160k"},
-    {"role": "Data Analyst", "company": "DataWorks", "skills": "python sql pandas numpy tableau", "location": "New York, NY", "salary": "$90k - $115k"},
-    {"role": "React Frontend Engineer", "company": "Creative UI", "skills": "react javascript css tailwind redux", "location": "Austin, TX", "salary": "$110k - $140k"},
-    {"role": "DevOps Engineer", "company": "CloudScale", "skills": "aws docker kubernetes linux python", "location": "Remote", "salary": "$140k - $170k"},
-    {"role": "Machine Learning Engineer", "company": "AI Future", "skills": "python tensorflow pytorch scikit-learn", "location": "Boston, MA", "salary": "$150k - $190k"},
-    {"role": "Java Developer", "company": "Enterprise Sol", "skills": "java spring boot sql hibernate", "location": "Chicago, IL", "salary": "$115k - $135k"},
-    {"role": "Mobile App Developer", "company": "Appify", "skills": "react native flutter ios android", "location": "Los Angeles, CA", "salary": "$120k - $145k"},
-    {"role": "Cybersecurity Analyst", "company": "SecureNet", "skills": "network security linux python firewalls", "location": "Washington, DC", "salary": "$100k - $130k"},
-    {"role": "Product Manager", "company": "InnovateX", "skills": "agile jira product management communication", "location": "Seattle, WA", "salary": "$130k - $160k"},
-]
+JOBS_DB = [] # Cleared for cleaner Admin view
 
 # ---------------- PLACEMENTS DATA (20 COLLEGES × 10 COMPANIES) ----------------
 def companies():
@@ -294,14 +415,73 @@ except:
     download("en_core_web_sm")
     nlp = spacy.load("en_core_web_sm")
 
-def extract_text(file_bytes):
-    # Takes bytes, returns string
+    nlp = spacy.load("en_core_web_sm")
+
+def extract_text(file_bytes, filename):
+    # Takes bytes and filename, returns string
+    text = ""
     try:
-        if isinstance(file_bytes, bytes):
-            return pdf_extract_text(io.BytesIO(file_bytes))
+        if filename.lower().endswith(".pdf"):
+            import pypdf
+            
+            # Method 1: pdfminer.six (High Level)
+            try:
+                if isinstance(file_bytes, bytes):
+                    text = pdf_extract_text(io.BytesIO(file_bytes))
+            except Exception as e:
+                print(f"⚠️ pdfminer failed: {e}")
+
+            # Method 2: pypdf (Fallback)
+            if not text or len(text) < 50:
+                print("⚠️ pdfminer yielded low text, switching to pypdf...")
+                try:
+                    pdf_reader = pypdf.PdfReader(io.BytesIO(file_bytes))
+                    fallback_text = []
+                    for page in pdf_reader.pages:
+                        extracted = page.extract_text()
+                        if extracted:
+                            fallback_text.append(extracted)
+                    text = "\n".join(fallback_text)
+                except Exception as e:
+                    print(f"⚠️ pypdf failed: {e}")
+
+            print(f"📄 DEBUG: Extracted {len(text)} chars from PDF")
+            return text
+
+        elif filename.lower().endswith(".docx"):
+            # Native DOCX extraction (No dependencies required)
+            import zipfile
+            import xml.etree.ElementTree as ET
+            
+            try:
+                with zipfile.ZipFile(io.BytesIO(file_bytes)) as docx:
+                    # DOCX is just a zip file. Content is in word/document.xml
+                    xml_content = docx.read('word/document.xml')
+                    tree = ET.fromstring(xml_content)
+                    
+                    # Namespace map (usually needed for w:t tags)
+                    namespaces = {'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
+                    
+                    text_parts = []
+                    # Find all <w:t> (text) tags
+                    for node in tree.iter():
+                        if node.tag.endswith('}t'):
+                            if node.text:
+                                text_parts.append(node.text)
+                        elif node.tag.endswith('}p'): # Newline for paragraphs
+                            text_parts.append('\n')
+                        elif node.tag.endswith('}tr'): # Newline for table rows
+                             text_parts.append('\n')
+                             
+                    text = "".join(text_parts).strip()
+                    print(f"📄 DEBUG: Extracted {len(text)} chars from DOCX (Native)")
+                    return text
+            except Exception as e:
+                print(f"⚠️ Native DOCX extraction failed: {e}")
+                return ""
         return ""
     except Exception as e:
-        print(f"Error extracting text: {e}")
+        print(f"❌ Error extracting text from {filename}: {e}")
         return ""
 
 def analyze_content(resume_text, jd_text):
@@ -511,10 +691,6 @@ def verify_user(data: TokenSchema, db: Session = Depends(get_db)):
     # ------------------------------------------------
 
     
-    # SQLite Sync Removed - Fully migrated to Firestore
-    # db_user = db.query(User).filter(User.email == email).first()
-    # ...
-
     return {
         "success": True, 
         "user": email.split("@")[0], 
@@ -591,10 +767,10 @@ async def analyze_resume(
 ):
     # 1. Read File
     content = await resume.read()
-    resume_text = extract_text(content)
+    resume_text = extract_text(content, resume.filename)
     
     if not resume_text or len(resume_text) < 10:
-        return JSONResponse(status_code=400, content={"error": "Could not extract text from PDF. Please upload a valid text-based PDF."})
+        return JSONResponse(status_code=400, content={"error": "Could not extract text from file. Please upload a valid PDF or DOCX."})
 
     # 2. Calculate Matches
     ats_score, missing = analyze_content(resume_text, job_description)
@@ -642,6 +818,115 @@ async def analyze_resume(
         "missing_keywords": missing,
         "suggestions": suggestions
     }
+
+@app.post("/analyze-resume-ai")
+async def analyze_resume_ai(
+    resume: UploadFile = File(...),
+    job_description: str = Form(...),
+    job_title: str = Form(...),
+    uid: str = Form(None) # Optional for now, but needed for saving history
+):
+    """
+    New AI-powered Resume Analysis using Google Gemini (Groq Llama 3).
+    Follows the criteria from the reference project.
+    """
+    # 1. Read & Extract Text
+    content = await resume.read()
+    resume_text = extract_text(content, resume.filename)
+    
+    # 2. Call AI Service
+    try:
+        # Fallback for Scanned/Complex PDFs: Send raw bytes to Gemini if text is too short
+        if not resume_text or len(resume_text) < 50:
+            logger.warning(f"⚠️ Text extraction failed (len={len(resume_text)}). Switching to Gemini Vision OCR.")
+            # Determine mime type
+            mime_type = "application/pdf"
+            if resume.filename.lower().endswith(".docx"):
+                 mime_type = "application/octet-stream" 
+
+            analysis_result = analyze_resume_gemini(
+                resume_content=content, # Raw bytes
+                job_title=job_title, 
+                job_description=job_description,
+                is_raw_file=True,
+                mime_type=mime_type
+            )
+        else:
+             # Standard Text analysis
+             analysis_result = analyze_resume_gemini(
+                resume_content=resume_text, 
+                job_title=job_title, 
+                job_description=job_description,
+                is_raw_file=False
+            )
+        
+        # 3. Save to History (Firestore) if UID is present
+        if uid:
+            from firebase_config import firebase_client
+            from firebase_admin import firestore
+            fs_db = firebase_client.db
+            
+            if fs_db:
+                try:
+                    user_ref = fs_db.collection("users").document(uid)
+                    
+                    # Create history entry
+                    history_entry = {
+                        "job_role": job_title,
+                        "overallScore": analysis_result.get("overallScore", 0),
+                        "timestamp": firestore.SERVER_TIMESTAMP,
+                        "type": "AI Analysis"
+                    }
+                    
+                    user_ref.collection("analysis_history").add(history_entry)
+                    
+                    # Award XP (+20)
+                    user_doc = user_ref.get()
+                    current_xp = 0
+                    if user_doc.exists:
+                         current_xp = user_doc.to_dict().get("xp", 0)
+                    
+                    user_ref.update({"xp": current_xp + 20})
+                    print(f"✅ Saved history for user {uid}")
+                    
+                except Exception as e:
+                    logger.error(f"Failed to save history: {e}")
+
+        return analysis_result
+    except Exception as e:
+        logger.error(f"AI Analysis failed: {e}")
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+@app.post("/analyze-insights")
+async def analyze_insights_endpoint(
+    resume: UploadFile = File(...),
+    job_description: str = Form(...),
+    job_title: str = Form(...)
+):
+    """
+    Phase 2: Deep Market Intelligence Analysis.
+    Returns Skill Gaps, Interview Questions, and Predictors.
+    """
+    try:
+        # 1. Read & Extract Text
+        content = await resume.read()
+        resume_text = extract_text(content, resume.filename)
+        
+        if not resume_text or len(resume_text) < 50:
+             return JSONResponse(status_code=400, content={"error": "Could not extract text for insights."})
+
+        # 2. Call Insight Service
+        insights = generate_market_intelligence(
+            resume_content=resume_text,
+            job_description=job_description,
+            job_title=job_title
+        )
+        
+        return insights
+
+    except Exception as e:
+        logger.error(f"Insight Analysis failed: {e}")
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 @app.get("/analysis-history/{uid}")
 def get_analysis_history(uid: str):
@@ -1348,3 +1633,48 @@ def get_dashboard_stats(uid: str):
         print(f"Stats Error: {e}")
         
     return stats
+
+# ---------------- ANSWER VALIDATION ----------------
+class ValidateRequest(BaseModel):
+    question: str
+    answer: str
+    domain: str
+
+@app.post("/validate-answer")
+async def validate_answer(request: ValidateRequest):
+    if not GEMINI_API_KEY:
+        return {"score": 0, "feedback": "AI key missing. Cannot validate answer."}
+
+    try:
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        
+        prompt = f"""
+        You are an expert technical interviewer for {request.domain}.
+        Question: "{request.question}"
+        Candidate Answer: "{request.answer}"
+        
+        Task:
+        1. Evaluate the answer for correctness, depth, and clarity.
+        2. Provide a score out of 10.
+        3. Provide constructive feedback (max 3 sentences).
+        
+        Output JSON format:
+        {{
+            "score": <number>,
+            "feedback": "<text>"
+        }}
+        """
+        
+        response = model.generate_content(prompt)
+        # Clean response to ensure it's valid JSON
+        text = response.text.strip()
+        if text.startswith("```json"):
+            text = text[7:-3].strip()
+        
+        import json
+        result = json.loads(text)
+        return result
+
+    except Exception as e:
+        logger.error(f"Validation Error: {e}")
+        return {"score": 0, "feedback": f"Error validating answer: {str(e)}"}

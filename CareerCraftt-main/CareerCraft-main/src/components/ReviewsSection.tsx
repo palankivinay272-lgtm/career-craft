@@ -61,31 +61,31 @@ const ReviewsSection = () => {
                     <div className="flex -ml-4 touch-pan-y">
                         {reviews.map((review, index) => (
                             <div key={index} className="flex-[0_0_100%] md:flex-[0_0_50%] lg:flex-[0_0_33.33%] min-w-0 pl-4">
-                                <Card className="glass-card p-8 h-full border-white/5 relative flex flex-col hover-lift">
-                                    <Quote className="absolute top-6 right-6 text-white/5" size={40} />
+                                <Card className="glass-card p-8 h-full border-border relative flex flex-col hover-lift">
+                                    <Quote className="absolute top-6 right-6 text-foreground/5" size={40} />
 
                                     <div className="flex items-center gap-1 mb-4">
                                         {[...Array(5)].map((_, i) => (
                                             <Star
                                                 key={i}
                                                 size={16}
-                                                className={i < review.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-600"}
+                                                className={i < review.rating ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"}
                                             />
                                         ))}
                                     </div>
 
-                                    <p className="text-gray-300 mb-6 flex-grow leading-relaxed">
+                                    <p className="text-muted-foreground mb-6 flex-grow leading-relaxed">
                                         "{review.text}"
                                     </p>
 
-                                    <div className="flex items-center gap-4 pt-4 border-t border-white/5">
+                                    <div className="flex items-center gap-4 pt-4 border-t border-border">
                                         <img
                                             src={review.avatar}
                                             alt={review.name}
                                             className="w-12 h-12 rounded-full object-cover border-2 border-primary/20"
                                         />
                                         <div>
-                                            <h4 className="font-semibold text-white">{review.name}</h4>
+                                            <h4 className="font-semibold text-foreground">{review.name}</h4>
                                             <p className="text-xs text-muted-foreground">{review.role}</p>
                                         </div>
                                     </div>

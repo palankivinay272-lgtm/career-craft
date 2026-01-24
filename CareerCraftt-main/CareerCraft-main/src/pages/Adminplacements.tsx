@@ -12,11 +12,27 @@ type Job = { id?: string; role: string; company: string; skills: string; locatio
 type User = { uid: string; email: string; college: string; role: string; lastLogin: any };
 
 const COLLEGES = [
-  "ABC College", "XYZ University", "IIT Delhi", "IIT Bombay", "IIT Madras",
-  "NIT Trichy", "NIT Warangal", "NIT Surathkal", "BITS Pilani", "VIT Vellore",
-  "SRM University", "Amity University", "Anna University", "JNTU Hyderabad",
-  "Osmania University", "Manipal University", "PES University", "Christ University",
-  "Lovely Professional University", "SASTRA University", "Anurag University",
+  "Anurag University",
+  "BITS Pilani, Hyderabad Campus",
+  "BV Raju Institute of Technology (BVRIT)",
+  "Chaitanya Bharathi Institute of Technology (CBIT)",
+  "Gokaraju Rangaraju Institute of Engineering and Technology (GRIET)",
+  "IIIT Hyderabad",
+  "IIT Hyderabad",
+  "Institute of Aeronautical Engineering (IARE)",
+  "JNTU Hyderabad",
+  "Mahindra University",
+  "Malla Reddy College of Engineering",
+  "Methodist College of Engineering and Technology",
+  "Muffakham Jah College of Engineering and Technology",
+  "Narayanamma Institute of Technology and Science",
+  "Osmania University",
+  "Sreenidhi Institute of Science and Technology (SNIST)",
+  "University of Hyderabad (HCU)",
+  "Vardhaman College of Engineering",
+  "Vasavi College of Engineering",
+  "VNR Vignana Jyothi Institute of Engineering and Technology",
+  "Woxsen University",
 ];
 
 export default function AdminPlacements() {
@@ -224,9 +240,9 @@ export default function AdminPlacements() {
 
         {/* === TAB 2: JOBS MANAGER === */}
         {activeTab === "jobs" && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="flex justify-center">
             {/* ADD FORM */}
-            <Card className="bg-white/5 border-white/10 h-fit">
+            <Card className="bg-white/5 border-white/10 h-fit w-full max-w-2xl">
               <CardHeader><CardTitle className="text-white text-lg flex items-center gap-2"><Plus size={18} /> Post New Job</CardTitle></CardHeader>
               <CardContent className="space-y-3">
                 <Input placeholder="Job Role" value={newJob.role} onChange={e => setNewJob({ ...newJob, role: e.target.value })} className="bg-black/40 border-white/20 text-white" />
@@ -238,23 +254,10 @@ export default function AdminPlacements() {
               </CardContent>
             </Card>
 
-            {/* JOBS LIST */}
-            <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-              {jobs.map((job, i) => (
-                <div key={i} className="p-4 bg-white/5 border border-white/10 rounded-xl flex justify-between group hover:border-purple-500/30 transition">
-                  <div>
-                    <h3 className="font-bold text-white text-lg">{job.role}</h3>
-                    <p className="text-sm text-cyan-400">{job.company}</p>
-                    <p className="text-xs text-gray-400 mt-2">{job.location} • {job.salary}</p>
-                    <div className="flex gap-2 mt-2 flex-wrap">
-                      {job.skills.split(" ").slice(0, 3).map(s => <span key={s} className="text-[10px] bg-white/10 px-2 py-0.5 rounded text-gray-300">{s}</span>)}
-                    </div>
-                  </div>
-                  <Button variant="ghost" size="icon" onClick={() => handleDeleteJob(job.id || "")} className="text-red-400 opacity-0 group-hover:opacity-100 transition"><Trash2 size={18} /></Button>
-                </div>
-              ))}
-            </div>
+            {/* JOBS LIST HIDDEN AS PER USER REQUEST */}
+            {/* <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4"> ... </div> */}
           </div>
+
         )}
 
         {/* === TAB 3: STUDENT DIRECTORY === */}
@@ -295,7 +298,7 @@ export default function AdminPlacements() {
         )}
 
       </div>
-    </div>
+    </div >
   );
 }
 

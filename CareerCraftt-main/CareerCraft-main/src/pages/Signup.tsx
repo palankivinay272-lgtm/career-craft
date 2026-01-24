@@ -10,16 +10,32 @@ export default function Signup() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [college, setCollege] = useState("");
-  const [role, setRole] = useState("student"); // Default to student
+  const [role] = useState("student"); // Default to student
   const [loading, setLoading] = useState(false);
 
-  // List of Colleges (Shared with Placements.tsx - simplified for now)
+  // List of Colleges (Hyderabad Specific)
   const COLLEGES = [
-    "ABC College", "XYZ University", "IIT Delhi", "IIT Bombay", "IIT Madras",
-    "NIT Trichy", "NIT Warangal", "NIT Surathkal", "BITS Pilani", "VIT Vellore",
-    "SRM University", "Amity University", "Anna University", "JNTU Hyderabad",
-    "Osmania University", "Manipal University", "PES University", "Christ University",
-    "Lovely Professional University", "SASTRA University", "Anurag University"
+    "Anurag University",
+    "BITS Pilani, Hyderabad Campus",
+    "BV Raju Institute of Technology (BVRIT)",
+    "Chaitanya Bharathi Institute of Technology (CBIT)",
+    "Gokaraju Rangaraju Institute of Engineering and Technology (GRIET)",
+    "IIIT Hyderabad",
+    "IIT Hyderabad",
+    "Institute of Aeronautical Engineering (IARE)",
+    "JNTU Hyderabad",
+    "Mahindra University",
+    "Malla Reddy College of Engineering",
+    "Methodist College of Engineering and Technology",
+    "Muffakham Jah College of Engineering and Technology",
+    "Narayanamma Institute of Technology and Science",
+    "Osmania University",
+    "Sreenidhi Institute of Science and Technology (SNIST)",
+    "University of Hyderabad (HCU)",
+    "Vardhaman College of Engineering",
+    "Vasavi College of Engineering",
+    "VNR Vignana Jyothi Institute of Engineering and Technology",
+    "Woxsen University"
   ];
 
   const handleKeyDown = (e: React.KeyboardEvent, target: string) => {
@@ -158,23 +174,7 @@ export default function Signup() {
           ))}
         </select>
 
-        {/* Role Selection */}
-        <div className="flex gap-4 mb-6">
-          <button
-            type="button"
-            onClick={() => setRole("student")}
-            className={`flex-1 py-2 rounded-lg border ${role === 'student' ? 'bg-purple-500/20 border-purple-500 text-purple-300' : 'border-white/10 text-gray-400'}`}
-          >
-            Student
-          </button>
-          <button
-            type="button"
-            onClick={() => setRole("admin")}
-            className={`flex-1 py-2 rounded-lg border ${role === 'admin' ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300' : 'border-white/10 text-gray-400'}`}
-          >
-            Admin
-          </button>
-        </div>
+
 
         {/* Button */}
         <button

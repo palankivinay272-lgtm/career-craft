@@ -114,11 +114,11 @@ const Navigation = () => {
             {/* 👈 LEFT SIDE RESOURCES MENU */}
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="mr-2 text-muted-foreground hover:text-white">
+                <Button variant="ghost" size="icon" className="mr-2 text-muted-foreground hover:text-foreground hover:bg-secondary/50">
                   <Menu className="h-6 w-6" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-[300px] border-r border-white/10 bg-black/90 backdrop-blur-xl pt-10 overflow-y-auto">
+              <SheetContent side="left" className="w-[300px] border-r border-border bg-background/95 backdrop-blur-xl pt-10 overflow-y-auto">
                 <SheetHeader>
                   <SheetTitle className="text-left text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent mb-6">
                     Menu
@@ -140,7 +140,7 @@ const Navigation = () => {
                                 to={subItem.path}
                                 className={`flex items-center space-x-3 px-4 py-2 rounded-lg transition-all duration-200 ${isActive(subItem.path)
                                   ? "bg-primary/20 text-primary"
-                                  : "text-muted-foreground hover:text-white hover:bg-white/5"
+                                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
                                   }`}
                                 onClick={() => setIsMenuOpen(false)}
                               >
@@ -157,7 +157,7 @@ const Navigation = () => {
                           to={group.path!}
                           className={`flex items-center space-x-3 px-4 py-2 rounded-lg transition-all duration-200 ${isActive(group.path!)
                             ? "bg-primary/20 text-primary"
-                            : "text-muted-foreground hover:text-white hover:bg-white/5"
+                            : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
                             }`}
                           onClick={() => setIsMenuOpen(false)}
                         >
@@ -183,7 +183,7 @@ const Navigation = () => {
                           to={link.path}
                           className={`flex items-center space-x-3 px-4 py-2 rounded-lg transition-all duration-200 ${isActive(link.path)
                             ? "bg-primary/20 text-primary border border-primary/20"
-                            : "text-muted-foreground hover:text-white hover:bg-white/5"
+                            : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
                             }`}
                           onClick={() => setIsMenuOpen(false)}
                         >
@@ -220,7 +220,7 @@ const Navigation = () => {
                       <span className="text-sm font-medium">{group.name}</span>
                       <ChevronDown className="h-3 w-3 opacity-50" />
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="bg-black/90 border-white/10 backdrop-blur-xl">
+                    <DropdownMenuContent className="bg-background/95 border-border backdrop-blur-xl">
                       {group.items.map(subItem => (
                         <DropdownMenuItem key={subItem.path} asChild>
                           <Link to={subItem.path} className="flex items-center cursor-pointer">

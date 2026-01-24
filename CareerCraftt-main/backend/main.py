@@ -270,42 +270,76 @@ def get_jobs():
 JOBS_DB = [] # Cleared for cleaner Admin view
 
 # ---------------- PLACEMENTS DATA (20 COLLEGES × 10 COMPANIES) ----------------
-def companies():
+# ---------------- PLACEMENTS DATA (TIERED) ----------------
+def get_tier1_companies():
     return [
-        {"company": "TCS", "totalHires": 40, "domains": ["Java"], "roles": ["SE"]},
-        {"company": "Infosys", "totalHires": 35, "domains": ["Python"], "roles": ["SE"]},
-        {"company": "Wipro", "totalHires": 30, "domains": ["Testing"], "roles": ["QA"]},
-        {"company": "Accenture", "totalHires": 28, "domains": ["Cloud"], "roles": ["Associate"]},
-        {"company": "Capgemini", "totalHires": 25, "domains": ["Java"], "roles": ["Consultant"]},
-        {"company": "Cognizant", "totalHires": 32, "domains": ["Data"], "roles": ["Analyst"]},
-        {"company": "HCL", "totalHires": 20, "domains": ["Infra"], "roles": ["Engineer"]},
-        {"company": "IBM", "totalHires": 18, "domains": ["AI"], "roles": ["Engineer"]},
-        {"company": "Oracle", "totalHires": 15, "domains": ["SQL"], "roles": ["Associate"]},
-        {"company": "Tech Mahindra", "totalHires": 22, "domains": ["Network"], "roles": ["Engineer"]},
+        {"company": "Google", "totalHires": 45, "domains": ["AI/ML", "Cloud"], "roles": ["SDE III", "Research Engineer"]},
+        {"company": "Microsoft", "totalHires": 42, "domains": ["Systems", "Web"], "roles": ["SDE II", "Product Manager"]},
+        {"company": "Amazon", "totalHires": 38, "domains": ["E-commerce", "AWS"], "roles": ["SDE I", "Cloud Architect"]},
+        {"company": "DE Shaw", "totalHires": 15, "domains": ["FinTech"], "roles": ["Member Technical"]},
+        {"company": "Goldman Sachs", "totalHires": 20, "domains": ["Finance"], "roles": ["Analyst"]},
+        {"company": "Uber", "totalHires": 12, "domains": ["Mobility"], "roles": ["SDE II"]},
+        {"company": "Salesforce", "totalHires": 25, "domains": ["CRM"], "roles": ["MTS"]},
+        {"company": "Adobe", "totalHires": 18, "domains": ["Multimedia"], "roles": ["CS Researcher"]},
+        {"company": "Oracle", "totalHires": 30, "domains": ["Database"], "roles": ["Server Engineer"]},
+        {"company": "Qualcomm", "totalHires": 28, "domains": ["Hardware"], "roles": ["Embedded Engineer"]},
+    ]
+
+def get_tier2_companies():
+    return [
+        {"company": "JP Morgan", "totalHires": 40, "domains": ["Finance"], "roles": ["Software Engineer"]},
+        {"company": "Deloitte", "totalHires": 55, "domains": ["Consulting"], "roles": ["Analyst"]},
+        {"company": "Wells Fargo", "totalHires": 35, "domains": ["Banking"], "roles": ["Program Associate"]},
+        {"company": "Oracle", "totalHires": 30, "domains": ["Cloud"], "roles": ["Application Developer"]},
+        {"company": "ServiceNow", "totalHires": 20, "domains": ["SaaS"], "roles": ["Associate SE"]},
+        {"company": "Accenture", "totalHires": 60, "domains": ["Services"], "roles": ["Packaged App Dev"]},
+        {"company": "Cognizant", "totalHires": 50, "domains": ["Digital"], "roles": ["GenC Next"]},
+        {"company": "TCS Digital", "totalHires": 45, "domains": ["Innovation"], "roles": ["System Engineer"]},
+        {"company": "LTI Mindtree", "totalHires": 30, "domains": ["Data"], "roles": ["Data Engineer"]},
+        {"company": "Hitachi", "totalHires": 25, "domains": ["IoT"], "roles": ["Software Developer"]},
+    ]
+
+def get_tier3_companies():
+    return [
+        {"company": "TCS", "totalHires": 120, "domains": ["Services"], "roles": ["Ninja", "Digital"]},
+        {"company": "Infosys", "totalHires": 100, "domains": ["Services"], "roles": ["Systems Engineer"]},
+        {"company": "Wipro", "totalHires": 90, "domains": ["Testing"], "roles": ["Project Engineer"]},
+        {"company": "Capgemini", "totalHires": 85, "domains": ["Consulting"], "roles": ["Analyst"]},
+        {"company": "HCL", "totalHires": 70, "domains": ["Support"], "roles": ["Graduate Trainee"]},
+        {"company": "Tech Mahindra", "totalHires": 65, "domains": ["Telecom"], "roles": ["Associate"]},
+        {"company": "Cognizant", "totalHires": 80, "domains": ["Testing"], "roles": ["Programmer Analyst"]},
+        {"company": "Mindtree", "totalHires": 50, "domains": ["Dev"], "roles": ["Junior Engineer"]},
+        {"company": "Virtusa", "totalHires": 40, "domains": ["Java"], "roles": ["Associate Engineer"]},
+        {"company": "Hexaware", "totalHires": 35, "domains": ["BPO/IT"], "roles": ["Trainee"]},
     ]
 
 PLACEMENTS_DB = {
-    "ABC College": companies(),
-    "XYZ University": companies(),
-    "IIT Delhi": companies(),
-    "IIT Bombay": companies(),
-    "IIT Madras": companies(),
-    "NIT Trichy": companies(),
-    "NIT Warangal": companies(),
-    "NIT Surathkal": companies(),
-    "BITS Pilani": companies(),
-    "VIT Vellore": companies(),
-    "SRM University": companies(),
-    "Amity University": companies(),
-    "Anna University": companies(),
-    "JNTU Hyderabad": companies(),
-    "Osmania University": companies(),
-    "Manipal University": companies(),
-    "PES University": companies(),
-    "Christ University": companies(),
-    "Lovely Professional University": companies(),
-    "SASTRA University": companies(),
-    "Anurag University": companies(),
+    # Tier 1
+    "IIIT Hyderabad": get_tier1_companies(),
+    "IIT Hyderabad": get_tier1_companies(),
+    "BITS Pilani, Hyderabad Campus": get_tier1_companies(),
+    "University of Hyderabad (HCU)": get_tier1_companies(),
+
+    # Tier 2
+    "JNTU Hyderabad": get_tier2_companies(),
+    "Osmania University": get_tier2_companies(),
+    "Chaitanya Bharathi Institute of Technology (CBIT)": get_tier2_companies(),
+    "Vasavi College of Engineering": get_tier2_companies(),
+    "VNR Vignana Jyothi Institute of Engineering and Technology": get_tier2_companies(),
+
+    # Tier 3
+    "Anurag University": get_tier3_companies(),
+    "BV Raju Institute of Technology (BVRIT)": get_tier3_companies(),
+    "Gokaraju Rangaraju Institute of Engineering and Technology (GRIET)": get_tier3_companies(),
+    "Institute of Aeronautical Engineering (IARE)": get_tier3_companies(),
+    "Mahindra University": get_tier3_companies(), # Could be Tier 2, treating as 3 for now or upgrade later
+    "Malla Reddy College of Engineering": get_tier3_companies(),
+    "Methodist College of Engineering and Technology": get_tier3_companies(),
+    "Muffakham Jah College of Engineering and Technology": get_tier3_companies(),
+    "Narayanamma Institute of Technology and Science": get_tier3_companies(),
+    "Sreenidhi Institute of Science and Technology (SNIST)": get_tier3_companies(),
+    "Vardhaman College of Engineering": get_tier3_companies(),
+    "Woxsen University": get_tier3_companies(),
 }
 
 # ---------------- ADMIN ----------------
@@ -394,14 +428,32 @@ def delete_placement(college: str, index: int):
 def get_placements(college: str):
     from firebase_config import firebase_client
     db = firebase_client.db
+    
+    # 1. Fallback if DB not connected
     if not db:
         return PLACEMENTS_DB.get(college, [])
         
     doc_ref = db.collection("placements").document(college)
     doc = doc_ref.get()
+    
+    # 2. Return from DB if exists
     if doc.exists:
-        return doc.to_dict().get("companies", [])
-    return []
+        data = doc.to_dict()
+        if data and "companies" in data and len(data["companies"]) > 0:
+             return data["companies"]
+
+    # 3. AUTO-SEED: If not in DB (or empty), save local data to DB
+    print(f"⚡ Seeding Firestore with data for {college}...")
+    local_data = PLACEMENTS_DB.get(college, [])
+    
+    if local_data:
+        try:
+            doc_ref.set({"companies": local_data}, merge=True)
+            print("✅ Seeding Complete")
+        except Exception as e:
+            print(f"❌ Seeding Failed: {e}")
+            
+    return local_data
 
 # ---------------- HELPERS ----------------
 # ---------------- HELPERS ----------------

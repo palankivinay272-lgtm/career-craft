@@ -25,31 +25,31 @@ type Placement = {
 };
 
 const COLLEGES = [
-  "ABC College",
-  "XYZ University",
-  "IIT Delhi",
-  "IIT Bombay",
-  "IIT Madras",
-  "NIT Trichy",
-  "NIT Warangal",
-  "NIT Surathkal",
-  "BITS Pilani",
-  "VIT Vellore",
-  "SRM University",
-  "Amity University",
-  "Anna University",
-  "JNTU Hyderabad",
-  "Osmania University",
-  "Manipal University",
-  "PES University",
-  "Christ University",
-  "Lovely Professional University",
-  "SASTRA University",
   "Anurag University",
+  "BITS Pilani, Hyderabad Campus",
+  "BV Raju Institute of Technology (BVRIT)",
+  "Chaitanya Bharathi Institute of Technology (CBIT)",
+  "Gokaraju Rangaraju Institute of Engineering and Technology (GRIET)",
+  "IIIT Hyderabad",
+  "IIT Hyderabad",
+  "Institute of Aeronautical Engineering (IARE)",
+  "JNTU Hyderabad",
+  "Mahindra University",
+  "Malla Reddy College of Engineering",
+  "Methodist College of Engineering and Technology",
+  "Muffakham Jah College of Engineering and Technology",
+  "Narayanamma Institute of Technology and Science",
+  "Osmania University",
+  "Sreenidhi Institute of Science and Technology (SNIST)",
+  "University of Hyderabad (HCU)",
+  "Vardhaman College of Engineering",
+  "Vasavi College of Engineering",
+  "VNR Vignana Jyothi Institute of Engineering and Technology",
+  "Woxsen University",
 ];
 
 export default function Placements() {
-  const [college, setCollege] = useState("ABC College");
+  const [college, setCollege] = useState("Anurag University");
   const [placementsData, setPlacementsData] = useState<Placement[]>([]);
   const [loading, setLoading] = useState(false);
 

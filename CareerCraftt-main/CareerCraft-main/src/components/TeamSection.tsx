@@ -48,7 +48,7 @@ const TeamSection = () => {
                             <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-2xl opacity-50 group-hover:opacity-100 blur transition duration-500"></div>
 
                             {/* Card Content */}
-                            <div className="relative h-full bg-black rounded-2xl p-6 flex flex-col items-center text-center transition-transform duration-500 group-hover:-translate-y-2 border border-white/10">
+                            <div className="relative h-full bg-card rounded-2xl p-6 flex flex-col items-center text-center transition-transform duration-500 group-hover:-translate-y-2 border border-border">
 
                                 {/* Image Container */}
                                 <div className="relative w-40 h-40 mb-6 rounded-full p-1 bg-gradient-to-tr from-purple-500 to-cyan-500">
@@ -61,7 +61,7 @@ const TeamSection = () => {
                                     <div className="absolute bottom-2 right-2 w-6 h-6 bg-green-500 rounded-full border-4 border-black z-10 box-content"></div>
                                 </div>
 
-                                <h3 className="text-2xl font-bold text-white mb-1 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-purple-400 group-hover:to-pink-400 transition-colors">
+                                <h3 className="text-2xl font-bold text-card-foreground mb-1 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-purple-400 group-hover:to-pink-400 transition-colors">
                                     {member.name}
                                 </h3>
 
@@ -69,19 +69,19 @@ const TeamSection = () => {
                                     {member.role}
                                 </span>
 
-                                <p className="text-gray-400 text-sm leading-relaxed mb-6 flex-grow">
+                                <p className="text-muted-foreground text-sm leading-relaxed mb-6 flex-grow">
                                     {member.bio}
                                 </p>
 
                                 {/* Social Links - Reveal on Hover */}
-                                <div className="flex gap-4 pt-6 border-t border-white/5 w-full justify-center">
+                                <div className="flex gap-4 pt-6 border-t border-border w-full justify-center">
                                     <a href="#" className="transform transition-all duration-300 hover:scale-125 hover:text-blue-400 text-gray-500">
                                         <Linkedin size={20} />
                                     </a>
                                     <a href="#" className="transform transition-all duration-300 hover:scale-125 hover:text-sky-400 text-gray-500">
                                         <Twitter size={20} />
                                     </a>
-                                    <a href="#" className="transform transition-all duration-300 hover:scale-125 hover:text-white text-gray-500">
+                                    <a href="#" className="transform transition-all duration-300 hover:scale-125 hover:text-foreground text-muted-foreground">
                                         <Github size={20} />
                                     </a>
                                 </div>

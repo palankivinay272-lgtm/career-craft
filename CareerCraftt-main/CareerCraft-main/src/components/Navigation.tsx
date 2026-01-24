@@ -105,6 +105,8 @@ const Navigation = () => {
     { name: "Help Center", path: "/help", icon: BookOpen },
   ];
 
+
+
   return (
     <nav className="glass-card border-b border-border/30 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6 py-4">

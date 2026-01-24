@@ -7,3 +7,22 @@
 ✅ Firebase Admin Initialized
 ✅ Firebase Admin Initialized
 ✅ Firebase Admin Initialized
+<<<<<<< HEAD
+=======
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+>>>>>>> 31bd55e66910435edfd8ff0e17b1dcf7c6ea6bdb

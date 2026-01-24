@@ -81,11 +81,10 @@ def generate_market_intelligence(resume_content: str, job_description: str, job_
     data = {
         "model": "llama-3.3-70b-versatile",
         "messages": [
-            {"role": "system", "content": "You are a strategic career advisor. Output strictly JSON."},
+            {"role": "system", "content": "You are a strategic career advisor. Output strictly JSON. Do not include markdown formatting like ```json ... ```. Do not output any thinking or explanations."},
             {"role": "user", "content": prompt}
         ],
-        "temperature": 0.3,
-        "response_format": {"type": "json_object"}
+        "temperature": 0.2
     }
 
     try:
@@ -101,6 +100,12 @@ def generate_market_intelligence(resume_content: str, job_description: str, job_
 
         result = response.json()
         content_str = result['choices'][0]['message']['content']
+        
+        import re
+        match = re.search(r'\{.*\}', content_str, re.DOTALL)
+        if match:
+            content_str = match.group(0)
+            
         return json.loads(content_str)
 
     except Exception as e:

@@ -98,11 +98,11 @@ const Profile = () => {
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // Limit to 5MB
+      if (file.size > 1200 * 1024) { // Limit to 1.2MB
         toast({
           variant: "destructive",
           title: "File too large",
-          description: "Please upload an image smaller than 5MB.",
+          description: "Please upload an image smaller than 1.2MB.",
         });
         return;
       }

@@ -2,14 +2,15 @@ import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import TextInterview from "../components/TextInterview";
 import VideoInterview from "../components/VideoInterview";
+import CodingPractice from "../components/CodingPractice"; // Import
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Bot, ArrowLeft, Video } from "lucide-react";
+import { Bot, ArrowLeft, Video, Code2 } from "lucide-react"; // Import Code2
 
 const MockInterview = () => {
   const [searchParams] = useSearchParams();
   const initialDomain = searchParams.get("domain") || "";
-  const [mode, setMode] = useState<"menu" | "text" | "video">(initialDomain ? "text" : "menu");
+  const [mode, setMode] = useState<"menu" | "text" | "video" | "coding">(initialDomain ? "text" : "menu"); // Update type
 
   return (
     <div className="min-h-screen bg-black text-white p-4 md:p-8 flex flex-col">
@@ -27,7 +28,7 @@ const MockInterview = () => {
           </div>
 
           {/* Cards Section */}
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto"> {/* Changed to grid-cols-3 */}
 
             {/* 1. Text Quiz Card */}
             <Card
@@ -46,14 +47,8 @@ const MockInterview = () => {
                 <div className="space-y-2">
                   <h3 className="text-2xl font-bold text-white">Technical Quiz</h3>
                   <p className="text-gray-400">
-                    Test your knowledge across 10+ domains including AI, Web Dev, and DSA with instant feedback.
+                    Test your knowledge across 10+ domains including AI, Web Dev, and DSA.
                   </p>
-                </div>
-
-                <div className="w-full pt-4">
-                  <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-6 text-lg rounded-xl">
-                    Start Quiz
-                  </Button>
                 </div>
               </div>
             </Card>
@@ -75,14 +70,31 @@ const MockInterview = () => {
                 <div className="space-y-2">
                   <h3 className="text-2xl font-bold text-white">Video Interview</h3>
                   <p className="text-gray-400">
-                    Experience a real-time AI interview with speech-to-text questions and video recording.
+                    Experience a real-time AI interview with speech-to-text questions.
                   </p>
                 </div>
+              </div>
+            </Card>
 
-                <div className="w-full pt-4">
-                  <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-6 text-lg rounded-xl">
-                    Start Interview
-                  </Button>
+            {/* 3. Coding Practice Card (NEW) */}
+            <Card
+              onClick={() => setMode("coding")}
+              className="group relative overflow-hidden p-8 bg-gray-900 border-gray-800 hover:border-green-500 transition-all duration-300 cursor-pointer hover:shadow-2xl hover:shadow-green-500/10"
+            >
+              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <Code2 size={140} />
+              </div>
+
+              <div className="relative z-10 space-y-6 text-center flex flex-col items-center">
+                <div className="p-4 bg-green-500/20 rounded-full border border-green-500/30 group-hover:scale-110 transition-transform duration-300">
+                  <Code2 className="text-green-400" size={40} />
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-bold text-white">Coding Practice</h3>
+                  <p className="text-gray-400">
+                    Solve real questions from Campus Placements (TCS, Amazon, etc.).
+                  </p>
                 </div>
               </div>
             </Card>
@@ -102,8 +114,10 @@ const MockInterview = () => {
           {/* Render Component based on mode */}
           {mode === "text" ? (
             <TextInterview key={initialDomain} initialDomain={initialDomain} />
-          ) : (
+          ) : mode === "video" ? (
             <VideoInterview key={initialDomain} initialDomain={initialDomain} />
+          ) : (
+            <CodingPractice />
           )}
         </div>
       )}

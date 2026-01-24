@@ -1,7 +1,31 @@
 import { Card } from "@/components/ui/card";
 import { DollarSign, TrendingUp, MapPin, Briefcase } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const SalaryGuide = () => {
+    const navigate = useNavigate();
+
+    const roleToRoadmapQuery: Record<string, string> = {
+        "Software Engineer (SDE I)": "Full Stack Developer",
+        "Senior Software Engineer": "Full Stack Developer",
+        "Frontend Developer": "Frontend Developer",
+        "Backend Developer": "Backend Developer",
+        "DevOps Engineer": "DevOps Engineer",
+        "Full Stack Developer": "Full Stack Developer",
+        "Data Scientist": "Data Scientist",
+        "Data Analyst": "Data Scientist",
+        "Machine Learning Engineer": "Machine Learning Engineer",
+        "AI Research Scientist": "AI Research Scientist",
+        "Product Manager": "Product Manager",
+        "UI/UX Designer": "UI/UX Designer",
+        "Product Designer": "UI/UX Designer",
+    };
+
+    const handleRoleClick = (roleTitle: string) => {
+        const query = roleToRoadmapQuery[roleTitle] || roleTitle;
+        navigate(`/roadmaps?search=${encodeURIComponent(query)}`);
+    };
+
     const categories = [
         {
             name: "Engineering",
@@ -53,7 +77,11 @@ const SalaryGuide = () => {
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {category.roles.map((role, index) => (
-                                    <Card key={index} className="glass-card hover-lift p-6 border-white/5">
+                                    <Card
+                                        key={index}
+                                        className="glass-card hover-lift p-6 border-white/5 cursor-pointer transition-all hover:border-yellow-500/50"
+                                        onClick={() => handleRoleClick(role.title)}
+                                    >
                                         <div className="flex items-start justify-between mb-4">
                                             <div className="p-3 bg-white/5 rounded-lg">
                                                 <Briefcase className="w-6 h-6 text-yellow-500" />

@@ -105,26 +105,7 @@ const Navigation = () => {
     { name: "Help Center", path: "/help", icon: BookOpen },
   ];
 
-  const resourceLinks = [
-    { name: "Career Blog", path: "/blog", icon: FileText },
-    { name: "Interview Tips", path: "/interview-tips", icon: MessageSquare },
-    { name: "Salary Guide", path: "/salary-guide", icon: Target },
-    { name: "Help Center", path: "/help", icon: BookOpen },
-  ];
 
-  const resourceLinks = [
-    { name: "Career Blog", path: "/blog", icon: FileText },
-    { name: "Interview Tips", path: "/interview-tips", icon: MessageSquare },
-    { name: "Salary Guide", path: "/salary-guide", icon: Target },
-    { name: "Help Center", path: "/help", icon: BookOpen },
-  ];
-
-  const resourceLinks = [
-    { name: "Career Blog", path: "/blog", icon: FileText },
-    { name: "Interview Tips", path: "/interview-tips", icon: MessageSquare },
-    { name: "Salary Guide", path: "/salary-guide", icon: Target },
-    { name: "Help Center", path: "/help", icon: BookOpen },
-  ];
 
   return (
     <nav className="glass-card border-b border-border/30 sticky top-0 z-50">
@@ -160,8 +141,8 @@ const Navigation = () => {
                                 key={subItem.path}
                                 to={subItem.path}
                                 className={`flex items-center space-x-3 px-4 py-2 rounded-lg transition-all duration-200 ${isActive(subItem.path)
-                                    ? "bg-primary/20 text-primary"
-                                    : "text-muted-foreground hover:text-white hover:bg-white/5"
+                                  ? "bg-primary/20 text-primary"
+                                  : "text-muted-foreground hover:text-white hover:bg-white/5"
                                   }`}
                                 onClick={() => setIsMenuOpen(false)}
                               >
@@ -177,8 +158,8 @@ const Navigation = () => {
                           key={group.path}
                           to={group.path!}
                           className={`flex items-center space-x-3 px-4 py-2 rounded-lg transition-all duration-200 ${isActive(group.path!)
-                              ? "bg-primary/20 text-primary"
-                              : "text-muted-foreground hover:text-white hover:bg-white/5"
+                            ? "bg-primary/20 text-primary"
+                            : "text-muted-foreground hover:text-white hover:bg-white/5"
                             }`}
                           onClick={() => setIsMenuOpen(false)}
                         >
@@ -203,8 +184,8 @@ const Navigation = () => {
                           key={link.path}
                           to={link.path}
                           className={`flex items-center space-x-3 px-4 py-2 rounded-lg transition-all duration-200 ${isActive(link.path)
-                              ? "bg-primary/20 text-primary border border-primary/20"
-                              : "text-muted-foreground hover:text-white hover:bg-white/5"
+                            ? "bg-primary/20 text-primary border border-primary/20"
+                            : "text-muted-foreground hover:text-white hover:bg-white/5"
                             }`}
                           onClick={() => setIsMenuOpen(false)}
                         >

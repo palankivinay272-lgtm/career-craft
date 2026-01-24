@@ -93,11 +93,10 @@ def analyze_resume_gemini(resume_content: str, job_description: str = "", job_ti
     data = {
         "model": "llama-3.3-70b-versatile", # Proven, high-quality, free model
         "messages": [
-            {"role": "system", "content": "You are a helpful assistant that outputs only JSON."},
+            {"role": "system", "content": "You are a helpful assistant that outputs ONLY JSON. Do not include markdown formatting like ```json ... ```. Do not output any thinking or explanations."},
             {"role": "user", "content": prompt}
         ],
-        "temperature": 0.2, # Low temp for consistent JSON
-        "response_format": {"type": "json_object"}
+        "temperature": 0.1 # Low temp for consistent JSON
     }
 
     print("🔄 Sending request to Groq (Llama 3)...")
@@ -125,10 +124,27 @@ def analyze_resume_gemini(resume_content: str, job_description: str = "", job_ti
         result = response.json()
         content_str = result['choices'][0]['message']['content']
         
-        # Parse JSON
-        parsed_data = json.loads(content_str)
-        print("✅ Groq Analysis Success")
-        return parsed_data
+        # Parse JSON Robustly
+        import re
+        try:
+            # Find first { and last }
+            match = re.search(r'\{.*\}', content_str, re.DOTALL)
+            if match:
+                content_str = match.group(0)
+            parsed_data = json.loads(content_str)
+            print("✅ Groq Analysis Success")
+            return parsed_data
+        except json.JSONDecodeError:
+            logger.error(f"JSON Decode Error. Raw Content: {content_str}")
+            # Fallback for simple errors
+            return {
+                "overallScore": 0,
+                "ATS": {"score": 0, "tips": [{"type": "improve", "tip": "AI Output Error: Try Again"}]},
+                "toneAndStyle": {"score": 0, "tips": []},
+                "content": {"score": 0, "tips": []},
+                "structure": {"score": 0, "tips": []},
+                "skills": {"score": 0, "tips": []}
+            }
 
     except requests.exceptions.ConnectionError:
         logger.error("Connection Error: Could not reach Groq API.")

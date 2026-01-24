@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Search } from "lucide-react";
 import { categories, roadmaps } from "@/data/roadmaps";
 // import CategorySection from "@/components/CategorySection";
@@ -6,19 +7,27 @@ import RoadmapCard from "@/components/RoadmapCard";
 import { Input } from "@/components/ui/input";
 
 const Roadmaps = () => {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchParams] = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
+
+  useEffect(() => {
+    const query = searchParams.get("search");
+    if (query) {
+      setSearchQuery(query);
+    }
+  }, [searchParams]);
 
   const filteredRoadmaps = searchQuery
     ? roadmaps.filter(
-        (r) =>
-          r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          r.description.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+      (r) =>
+        r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        r.description.toLowerCase().includes(searchQuery.toLowerCase())
+    )
     : null;
 
   return (
     <div className="min-h-screen bg-background">
-     
+
 
       {/* Hero */}
       <section className="relative pt-28 pb-12 overflow-hidden">
@@ -77,7 +86,7 @@ const Roadmaps = () => {
               </div>
             </div>
           )}
-          
+
 
         </div>
       </section>

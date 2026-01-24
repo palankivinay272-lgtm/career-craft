@@ -105,6 +105,8 @@ const Navigation = () => {
     { name: "Help Center", path: "/help", icon: BookOpen },
   ];
 
+
+
   return (
     <nav className="glass-card border-b border-border/30 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6 py-4">
@@ -258,6 +260,20 @@ const Navigation = () => {
               >
                 <Shield className="h-4 w-4" />
                 <span className="text-sm font-medium">Admin</span>
+              </Link>
+            )}
+
+            {/* 👤 PROFILE (FOR LOGGED IN USERS) */}
+            {isLoggedIn && (
+              <Link
+                to="/profile"
+                className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 ${isActive("/profile")
+                  ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
+                  : "text-muted-foreground hover:text-white hover:bg-white/5"
+                  }`}
+              >
+                <User className="h-4 w-4" />
+                <span className="text-sm font-medium">Profile</span>
               </Link>
             )}
 

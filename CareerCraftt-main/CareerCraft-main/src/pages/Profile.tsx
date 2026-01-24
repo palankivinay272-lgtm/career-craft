@@ -123,16 +123,21 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-black text-white p-4 md:p-8 flex justify-center">
-      <div className="max-w-4xl w-full space-y-8">
-        <h1 className="text-3xl font-bold text-purple-400">My Profile</h1>
+      <div className="max-w-6xl w-full space-y-8">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent">
+          My Profile
+        </h1>
 
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 shadow-xl">
-          <div className="flex flex-col md:flex-row gap-8 items-start">
+        <div className="bg-[#0f111a] border border-gray-800 rounded-2xl p-8 md:p-12 shadow-2xl relative overflow-hidden">
+          {/* Background Glow Effect */}
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-20"></div>
 
-            {/* Avatar */}
-            <div className="flex flex-col items-center space-y-4">
-              <div className="w-64 h-64 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 p-1 relative overflow-hidden">
-                <div className="w-full h-full bg-gray-900 rounded-full flex items-center justify-center overflow-hidden">
+          <div className="flex flex-col md:flex-row gap-12 items-start relative z-10">
+
+            {/* Avatar Section */}
+            <div className="flex flex-col items-center space-y-6 w-full md:w-auto">
+              <div className="w-64 h-64 rounded-full p-[3px] bg-gradient-to-br from-purple-600 via-pink-500 to-blue-500 shadow-lg shadow-purple-900/20">
+                <div className="w-full h-full bg-black rounded-full overflow-hidden relative">
                   {profile.photoURL ? (
                     <img
                       src={profile.photoURL}
@@ -144,10 +149,13 @@ const Profile = () => {
                       }}
                     />
                   ) : (
-                    <User size={128} className="text-gray-400" />
+                    <div className="flex items-center justify-center w-full h-full bg-gray-900">
+                      <User size={80} className="text-gray-600" />
+                    </div>
                   )}
                 </div>
               </div>
+
               <div className="relative">
                 <input
                   type="file"
@@ -155,28 +163,37 @@ const Profile = () => {
                   accept="image/*"
                   className="hidden"
                   onChange={handlePhotoUpload}
+                  disabled={!isEditing}
                 />
                 <label htmlFor="photo-upload">
-                  <Button variant="outline" asChild className="cursor-pointer hover:bg-white/10">
+                  <Button
+                    variant="outline"
+                    asChild
+                    className={`
+                      border-gray-700 bg-black/50 text-gray-300 hover:bg-gray-800 hover:text-white transition-all
+                      ${!isEditing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                    `}
+                  >
                     <span>Change Photo</span>
                   </Button>
                 </label>
               </div>
             </div>
 
-            {/* Form */}
-            <div className="flex-1 space-y-6 w-full">
-              <div className="grid md:grid-cols-2 gap-6">
+            {/* Form Section */}
+            <div className="flex-1 space-y-8 w-full">
+              <div className="grid md:grid-cols-2 gap-8">
 
                 {/* Full Name */}
                 <div className="space-y-2">
-                  <label className="text-sm text-gray-400">Full Name</label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-3 text-gray-500" size={16} />
+                  <label className="text-sm font-medium text-gray-400 ml-1">Full Name</label>
+                  <div className="relative group">
+                    <User className="absolute left-3 top-3.5 text-gray-500 group-focus-within:text-purple-400 transition-colors" size={18} />
                     <Input
-                      className="pl-10 bg-black/40 border-gray-700"
+                      className="pl-10 bg-[#0B1120] border-gray-800 focus:border-purple-500/50 text-gray-200 h-12 rounded-lg transition-all"
                       value={profile.fullName}
                       disabled={!isEditing}
+                      placeholder="Your Name"
                       onChange={(e) =>
                         setProfile({ ...profile, fullName: e.target.value })
                       }
@@ -186,29 +203,28 @@ const Profile = () => {
 
                 {/* Email */}
                 <div className="space-y-2">
-                  <label className="text-sm text-gray-400">Email</label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 text-gray-500" size={16} />
+                  <label className="text-sm font-medium text-gray-400 ml-1">Email</label>
+                  <div className="relative group">
+                    <Mail className="absolute left-3 top-3.5 text-gray-500 group-focus-within:text-purple-400 transition-colors" size={18} />
                     <Input
-                      className="pl-10 bg-black/40 border-gray-700"
+                      className="pl-10 bg-[#0B1120] border-gray-800 focus:border-purple-500/50 text-gray-200 h-12 rounded-lg transition-all"
                       value={profile.email}
-                      disabled={!isEditing}
-                      onChange={(e) =>
-                        setProfile({ ...profile, email: e.target.value })
-                      }
+                      disabled={true} // Email usually shouldn't be editable directly
+                      placeholder="email@example.com"
                     />
                   </div>
                 </div>
 
                 {/* GitHub */}
                 <div className="space-y-2">
-                  <label className="text-sm text-gray-400">GitHub</label>
-                  <div className="relative">
-                    <Github className="absolute left-3 top-3 text-gray-500" size={16} />
+                  <label className="text-sm font-medium text-gray-400 ml-1">GitHub</label>
+                  <div className="relative group">
+                    <Github className="absolute left-3 top-3.5 text-gray-500 group-focus-within:text-purple-400 transition-colors" size={18} />
                     <Input
-                      className="pl-10 bg-black/40 border-gray-700"
+                      className="pl-10 bg-[#0B1120] border-gray-800 focus:border-purple-500/50 text-gray-200 h-12 rounded-lg transition-all"
                       value={profile.github}
                       disabled={!isEditing}
+                      placeholder="github-username"
                       onChange={(e) =>
                         setProfile({ ...profile, github: e.target.value })
                       }
@@ -218,13 +234,14 @@ const Profile = () => {
 
                 {/* LinkedIn */}
                 <div className="space-y-2">
-                  <label className="text-sm text-gray-400">LinkedIn</label>
-                  <div className="relative">
-                    <Link2 className="absolute left-3 top-3 text-gray-500" size={16} />
+                  <label className="text-sm font-medium text-gray-400 ml-1">LinkedIn</label>
+                  <div className="relative group">
+                    <Link2 className="absolute left-3 top-3.5 text-gray-500 group-focus-within:text-purple-400 transition-colors" size={18} />
                     <Input
-                      className="pl-10 bg-black/40 border-gray-700"
+                      className="pl-10 bg-[#0B1120] border-gray-800 focus:border-purple-500/50 text-gray-200 h-12 rounded-lg transition-all"
                       value={profile.linkedin}
                       disabled={!isEditing}
+                      placeholder="LinkedIn Profile Name/URL"
                       onChange={(e) =>
                         setProfile({ ...profile, linkedin: e.target.value })
                       }
@@ -234,11 +251,12 @@ const Profile = () => {
 
                 {/* Target Role */}
                 <div className="space-y-2 md:col-span-2">
-                  <label className="text-sm text-gray-400">Target Role</label>
+                  <label className="text-sm font-medium text-gray-400 ml-1">Target Role</label>
                   <Input
-                    className="bg-black/40 border-gray-700"
+                    className="bg-[#0B1120] border-gray-800 focus:border-purple-500/50 text-gray-200 h-12 rounded-lg transition-all"
                     value={profile.targetRole}
                     disabled={!isEditing}
+                    placeholder="e.g. Software Engineer"
                     onChange={(e) =>
                       setProfile({ ...profile, targetRole: e.target.value })
                     }
@@ -246,21 +264,34 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* Buttons */}
-              <div className="pt-4 border-t border-gray-800 flex gap-3">
+              {/* Action Buttons */}
+              <div className="pt-8 border-t border-gray-800/50 flex gap-4">
                 {!isEditing ? (
-                  <Button variant="outline" onClick={() => setIsEditing(true)}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsEditing(true)}
+                    className="border-purple-500/30 text-purple-300 hover:bg-purple-500/10 hover:text-purple-200 hover:border-purple-500/50 transition-all"
+                  >
                     <Pencil size={16} className="mr-2" />
                     Edit Profile
                   </Button>
                 ) : (
-                  <Button
-                    className="bg-indigo-600 hover:bg-indigo-700"
-                    onClick={saveProfile}
-                  >
-                    <Save size={16} className="mr-2" />
-                    Save Changes
-                  </Button>
+                  <>
+                    <Button
+                      variant="ghost"
+                      onClick={() => setIsEditing(false)}
+                      className="text-gray-400 hover:text-white hover:bg-white/5"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      className="bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-900/20 transition-all"
+                      onClick={saveProfile}
+                    >
+                      <Save size={16} className="mr-2" />
+                      Save Changes
+                    </Button>
+                  </>
                 )}
               </div>
 

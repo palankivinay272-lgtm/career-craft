@@ -46,7 +46,7 @@ except FileNotFoundError:
 
 import requests
 import json
-from ai_resume_service import analyze_resume_gemini
+from ai_resume_service import analyze_resume_gemini, analyze_interview_answer
 from ai_insight_service import generate_market_intelligence
 
 # Try to get API key from environment
@@ -1421,6 +1421,19 @@ def job_matches(uid: str):
     return results
 
 # ---------------- INTERVIEW & DASHBOARD ----------------
+
+class AnswerRequest(BaseModel):
+    question: str
+    answer: str
+    domain: str = "General"
+
+@app.post("/analyze-answer")
+def analyze_answer_endpoint(data: AnswerRequest):
+    """
+    Evaluates a video interview answer using AI.
+    """
+    result = analyze_interview_answer(data.question, data.answer, data.domain)
+    return result
 
 class InterviewSession(BaseModel):
     uid: str

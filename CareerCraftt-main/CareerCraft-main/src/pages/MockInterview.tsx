@@ -44,15 +44,15 @@ const MockInterview = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <h3 className="text-2xl font-bold text-white">Technical Quiz</h3>
+                  <h3 className="text-2xl font-bold text-white">Text-Based Mock Interview</h3>
                   <p className="text-gray-400">
-                    Test your knowledge across 10+ domains including AI, Web Dev, and DSA with instant feedback.
+                    Practice technical questions with multiple-choice options and instant feedback.
                   </p>
                 </div>
 
                 <div className="w-full pt-4">
                   <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-6 text-lg rounded-xl">
-                    Start Quiz
+                    Start Text Quiz
                   </Button>
                 </div>
               </div>
@@ -73,15 +73,15 @@ const MockInterview = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <h3 className="text-2xl font-bold text-white">Video Interview</h3>
+                  <h3 className="text-2xl font-bold text-white">Video Interview Prep</h3>
                   <p className="text-gray-400">
-                    Experience a real-time AI interview with speech-to-text questions and video recording.
+                    Simulate a real video interview with AI-driven speech analysis and feedback.
                   </p>
                 </div>
 
                 <div className="w-full pt-4">
                   <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-6 text-lg rounded-xl">
-                    Start Interview
+                    Start Video Prep
                   </Button>
                 </div>
               </div>

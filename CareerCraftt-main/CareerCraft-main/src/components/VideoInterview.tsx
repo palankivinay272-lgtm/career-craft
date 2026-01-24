@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import Webcam from "react-webcam";
 import { Button } from "../components/ui/button";
 import { Loader2, Mic, Video, AlertCircle, Play, Square, ArrowRight, Volume2, Camera } from "lucide-react";
+import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 
 // Types
 type Question = {
@@ -48,7 +49,24 @@ const VideoInterview = ({ initialDomain }: { initialDomain?: string }) => {
     const [micAllowed, setMicAllowed] = useState(false);
     const [isSpeaking, setIsSpeaking] = useState(false);
 
+    // Analysis State
+    const [analyzing, setAnalyzing] = useState(false);
+    const [feedback, setFeedback] = useState<{ score: number, feedback: string, suggested_answer: string } | null>(null);
+
     const webcamRef = useRef<Webcam>(null);
+
+    // --- SPEECH RECOGNITION ---
+    const {
+        transcript,
+        listening,
+        resetTranscript,
+        browserSupportsSpeechRecognition
+    } = useSpeechRecognition();
+
+    if (!browserSupportsSpeechRecognition) {
+        // Fallback or alert if browser doesn't support it
+        // console.warn("Browser does not support speech recognition.");
+    }
 
     // --- TTS LOGIC (Improved) ---
     const speak = (text: string) => {
@@ -135,9 +153,41 @@ const VideoInterview = ({ initialDomain }: { initialDomain?: string }) => {
         }
     };
 
+    // --- ANALYSIS HANDLER ---
+    const handleAnalyze = async () => {
+        if (!transcript || transcript.length < 5) return;
+
+        setAnalyzing(true);
+        setFeedback(null);
+
+        try {
+            const res = await fetch("http://localhost:8000/analyze-answer", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    question: questions[currentQIndex].q,
+                    answer: transcript,
+                    domain: domain
+                })
+            });
+
+            const data = await res.json();
+            setFeedback(data);
+        } catch (error) {
+            console.error("Analysis Failed", error);
+        } finally {
+            setAnalyzing(false);
+        }
+    };
+
     // --- HANDLERS ---
     const handleNextQuestion = () => {
+        // Stop recording/listening
         setIsRecording(false);
+        SpeechRecognition.stopListening();
+        resetTranscript();
+        setFeedback(null); // Clear feedback
+
         if (currentQIndex < questions.length - 1) {
             const nextIndex = currentQIndex + 1;
             setCurrentQIndex(nextIndex);
@@ -151,7 +201,17 @@ const VideoInterview = ({ initialDomain }: { initialDomain?: string }) => {
     };
 
     const toggleRecording = () => {
-        setIsRecording(!isRecording);
+        if (isRecording) {
+            // Stop
+            setIsRecording(false);
+            SpeechRecognition.stopListening();
+        } else {
+            // Start
+            setIsRecording(true);
+            setFeedback(null); // Clear previous feedback
+            resetTranscript(); // Clear previous answer
+            SpeechRecognition.startListening({ continuous: true });
+        }
     };
 
     // --- RENDER HELPERS ---
@@ -283,6 +343,35 @@ const VideoInterview = ({ initialDomain }: { initialDomain?: string }) => {
                             <Volume2 className="w-4 h-4 mr-2" /> Replay Audio
                         </Button>
                     </div>
+
+                    {/* Live Transcript Display */}
+                    <div className="bg-gray-900 border border-gray-800 rounded-3xl p-6 shadow-xl flex-1 max-h-[300px] overflow-y-auto">
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-gray-500 text-xs uppercase tracking-wider font-bold">Your Response (Live)</span>
+                            {listening && <span className="text-red-400 text-xs animate-pulse">● Listening</span>}
+                        </div>
+                        <p className="text-gray-300 text-sm whitespace-pre-wrap">
+                            {transcript || <span className="text-gray-600 italic">Start answering to see your text here...</span>}
+                        </p>
+
+                        {/* FEEDBACK CARD */}
+                        {feedback && (
+                            <div className="mt-4 pt-4 border-t border-gray-700 animate-in fade-in slide-in-from-bottom-2">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-indigo-400 text-xs font-bold uppercase">AI Feedback</span>
+                                    <span className={`text-xs font-bold px-2 py-1 rounded ${feedback.score >= 7 ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
+                                        Score: {feedback.score}/10
+                                    </span>
+                                </div>
+                                <p className="text-gray-300 text-sm mb-2">{feedback.feedback}</p>
+                                <div className="bg-gray-800 p-3 rounded-lg">
+                                    <span className="text-gray-500 text-xs font-bold block mb-1">Suggested Answer:</span>
+                                    <p className="text-gray-400 text-xs italic">{feedback.suggested_answer}</p>
+                                </div>
+                            </div>
+                        )}
+
+                    </div>
                 </div>
 
                 {/* Right: User Video & Controls */}
@@ -290,7 +379,7 @@ const VideoInterview = ({ initialDomain }: { initialDomain?: string }) => {
                     <div className="flex-1 bg-black rounded-3xl border border-gray-800 overflow-hidden relative shadow-2xl group">
                         <Webcam
                             ref={webcamRef}
-                            audio={true}
+                            audio={false} // Audio is handled by speech recognition, prevent echo
                             className="w-full h-full object-cover"
                             mirrored={true}
                         />
@@ -299,7 +388,7 @@ const VideoInterview = ({ initialDomain }: { initialDomain?: string }) => {
                         {isRecording && (
                             <div className="absolute top-6 right-6 flex items-center gap-2 bg-red-500/20 backdrop-blur-md border border-red-500/30 px-4 py-2 rounded-full">
                                 <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-                                <span className="text-red-200 font-medium text-sm">Recording</span>
+                                <span className="text-red-200 font-medium text-sm">Recording Answer</span>
                             </div>
                         )}
 
@@ -317,19 +406,37 @@ const VideoInterview = ({ initialDomain }: { initialDomain?: string }) => {
                         <div className="flex items-center gap-4">
                             <div className={`w-3 h-3 rounded-full ${isSpeaking ? 'bg-indigo-500 animate-bounce' : 'bg-gray-600'}`} />
                             <span className="text-gray-400 font-medium">
-                                {isSpeaking ? "AI is speaking..." : isRecording ? "Listening..." : "Waiting for response"}
+                                {isSpeaking ? "AI is speaking..." : isRecording ? "Listening & Transcribing..." : analyzing ? "Analyzing Answer..." : "Waiting for response"}
                             </span>
                         </div>
 
                         <div className="flex gap-4">
+                            {!browserSupportsSpeechRecognition && (
+                                <div className="text-red-400 text-xs self-center mr-4">
+                                    Browser not supported for Speech-to-Text
+                                </div>
+                            )}
+
+                            {/* ANALYZE BUTTON */}
+                            {!isRecording && transcript && !feedback && (
+                                <Button
+                                    onClick={handleAnalyze}
+                                    disabled={analyzing}
+                                    className="px-6 py-6 text-lg rounded-xl font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-all"
+                                >
+                                    {analyzing ? <Loader2 className="w-5 h-5 animate-spin" /> : "Analyze Answer"}
+                                </Button>
+                            )}
+
                             <Button
                                 onClick={toggleRecording}
+                                disabled={analyzing}
                                 className={`px-8 py-6 text-lg rounded-xl font-semibold transition-all ${isRecording ? 'bg-red-500 hover:bg-red-600' : 'bg-white text-black hover:bg-gray-200'}`}
                             >
                                 {isRecording ? (
                                     <><Square className="w-5 h-5 mr-2 fill-current" /> Stop Answer</>
                                 ) : (
-                                    <><Play className="w-5 h-5 mr-2 fill-current" /> Start Answer</>
+                                    <><Play className="w-5 h-5 mr-2 fill-current" /> {transcript ? "Retake Answer" : "Start Answer"}</>
                                 )}
                             </Button>
 

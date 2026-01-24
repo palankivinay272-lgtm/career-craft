@@ -11,3 +11,4 @@ pypdf
 google-genai
 requests
 python-dotenv
+googlesearch-python

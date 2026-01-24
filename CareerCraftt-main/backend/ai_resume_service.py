@@ -150,3 +150,65 @@ def analyze_resume_gemini(resume_content: str, job_description: str = "", job_ti
             "structure": {"score": 0, "tips": []},
             "skills": {"score": 0, "tips": []}
         }
+
+def analyze_interview_answer(question: str, answer: str, domain: str = "General") -> dict:
+    """
+    Analyzes a video interview answer using Groq Cloud API.
+    Returns JSON validation logic.
+    """
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        return {"score": 0, "feedback": "Server Error: Missing Groq API Key", "suggested_answer": "N/A"}
+
+    if not answer or len(answer) < 5:
+        return {"score": 0, "feedback": "Please provide a longer answer for analysis.", "suggested_answer": "N/A"}
+
+    json_structure = """
+    {
+       "score": number, // 0-10
+       "feedback": "string", // Constructive feedback (2-3 sentences)
+       "suggested_answer": "string" // A better, concise answer
+    }
+    """
+
+    prompt = f"""
+    You are an expert Technical Interviewer for {domain}.
+    
+    Question: "{question}"
+    Candidate Answer: "{answer}"
+    
+    Task:
+    1. Rate the answer on a scale of 0-10 based on correctness, clarity, and depth.
+    2. Provide constructive feedback.
+    3. Provide a better, ideal suggested answer (concise).
+    
+    Output strictly in this JSON format:
+    {json_structure}
+    """
+
+    url = "https://api.groq.com/openai/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "model": "llama-3.3-70b-versatile",
+        "messages": [
+            {"role": "system", "content": "You are a helpful assistant that outputs only JSON."},
+            {"role": "user", "content": prompt}
+        ],
+        "temperature": 0.3,
+        "response_format": {"type": "json_object"}
+    }
+    
+    try:
+        response = requests.post(url, headers=headers, json=data, timeout=15)
+        if response.status_code == 200:
+            result = response.json()
+            content_str = result['choices'][0]['message']['content']
+            parsed = json.loads(content_str)
+            return parsed
+        else:
+             return {"score": 0, "feedback": f"AI Error: {response.text}", "suggested_answer": "N/A"}
+    except Exception as e:
+        return {"score": 0, "feedback": f"Error: {e}", "suggested_answer": "N/A"}

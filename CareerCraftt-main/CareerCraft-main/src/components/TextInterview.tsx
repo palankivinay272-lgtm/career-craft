@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { toast } from "sonner";
 import { Button } from "../components/ui/button";
 import { PieChart, Pie, Cell, Tooltip } from "recharts";
 import { Loader2, Trophy, ArrowRight, CheckCircle, XCircle, Sparkles } from "lucide-react";
@@ -58,7 +59,7 @@ const TextInterview = ({ initialDomain }: { initialDomain?: string }) => {
           setQuestions(adapted);
         } catch (error) {
           console.error(error);
-          alert("Failed to load questions. Please check backend connection.");
+          toast.error("Failed to load questions. Please check backend connection.");
           setStep("setup");
         } finally {
           setLoading(false);

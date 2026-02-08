@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,7 +8,15 @@ import { LogOut, School, Users, GraduationCap, TrendingUp, Briefcase, Search, Pl
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
 // --- TYPES ---
-type Placement = { company: string; totalHires: number; domains: string[]; roles: string[] };
+type Placement = {
+  company: string;
+  totalHires: number;
+  domains: string[];
+  roles: string[];
+  eligibility?: string;
+  deadline?: string;
+  drive_date?: string;
+};
 type Job = { id?: string; role: string; company: string; skills: string; location: string; salary: string };
 type User = { uid: string; email: string; college: string; role: string; lastLogin: any };
 
@@ -18,14 +27,17 @@ const COLLEGES = [
   "Chaitanya Bharathi Institute of Technology (CBIT)",
   "Gokaraju Rangaraju Institute of Engineering and Technology (GRIET)",
   "IIIT Hyderabad",
+  "IIT Bombay",
   "IIT Hyderabad",
   "Institute of Aeronautical Engineering (IARE)",
   "JNTU Hyderabad",
   "Mahindra University",
-  "Malla Reddy College of Engineering",
+  "Mallareddy Engineering College",
   "Methodist College of Engineering and Technology",
   "Muffakham Jah College of Engineering and Technology",
   "Narayanamma Institute of Technology and Science",
+  "National Institute of Technology (NIT) Trichy",
+  "NIT Warangal",
   "Osmania University",
   "Sreenidhi Institute of Science and Technology (SNIST)",
   "University of Hyderabad (HCU)",
@@ -37,7 +49,7 @@ const COLLEGES = [
 
 export default function AdminPlacements() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"dashboard" | "jobs" | "students">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "jobs" | "students" | "drives">("dashboard");
   const [loggedIn, setLoggedIn] = useState(false);
 
   // Auth State
@@ -56,6 +68,19 @@ export default function AdminPlacements() {
   // Students State
   const [students, setStudents] = useState<User[]>([]);
 
+  // Drive Management State
+  const [newDrive, setNewDrive] = useState<Placement>({
+    company: "",
+    totalHires: 0,
+    domains: [],
+    roles: [],
+    eligibility: "",
+    deadline: "",
+    drive_date: ""
+  });
+  const [selectedDriveApplicants, setSelectedDriveApplicants] = useState<any[]>([]);
+  const [viewingApplicantsFor, setViewingApplicantsFor] = useState<string | null>(null);
+
   // 1. Initial Load
   useEffect(() => {
     const isAdmin = localStorage.getItem("isAdmin") === "true";
@@ -63,6 +88,7 @@ export default function AdminPlacements() {
 
     if (isAdmin) {
       setLoggedIn(true);
+      console.log("🏛️ Admin Auth Detected. College stored:", adminCollege);
       if (adminCollege && adminCollege !== "SUPER_ADMIN") {
         setCollege(adminCollege);
         setIsSuperAdmin(false);
@@ -96,8 +122,8 @@ export default function AdminPlacements() {
         setLoggedIn(true);
         setCollege(data.college === "SUPER_ADMIN" ? "ABC College" : data.college);
         setIsSuperAdmin(data.college === "SUPER_ADMIN");
-      } else alert("Wrong credentials");
-    } catch { alert("Login failed"); }
+      } else toast.error("Wrong credentials");
+    } catch { toast.error("Login failed"); }
   };
 
   const logout = () => {
@@ -143,6 +169,28 @@ export default function AdminPlacements() {
     loadJobs();
   };
 
+  const handlePostDrive = async () => {
+    try {
+      const res = await fetch("http://127.0.0.1:8000/admin/placements", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...newDrive, college })
+      });
+      if (res.ok) {
+        toast.success("Drive posted successfully!");
+        setNewDrive({ company: "", totalHires: 0, domains: [], roles: [], eligibility: "", deadline: "", drive_date: "" });
+        loadPlacements();
+      }
+    } catch (err) { toast.error("Failed to post drive"); }
+  };
+
+  const loadApplicants = async (company: string) => {
+    const res = await fetch(`http://127.0.0.1:8000/admin/applications/${college}/${company}`);
+    const data = await res.json();
+    setSelectedDriveApplicants(data);
+    setViewingApplicantsFor(company);
+  };
+
   // --- VIEW: LOGIN ---
   if (!loggedIn) {
     return (
@@ -169,6 +217,7 @@ export default function AdminPlacements() {
           </h1>
           <div className="flex gap-2">
             <TabButton active={activeTab === "dashboard"} onClick={() => setActiveTab("dashboard")} label="Dashboard" icon={School} />
+            <TabButton active={activeTab === "drives"} onClick={() => setActiveTab("drives")} label="Manage Drives" icon={TrendingUp} />
             <TabButton active={activeTab === "jobs"} onClick={() => setActiveTab("jobs")} label="Jobs Portal" icon={Briefcase} />
             <TabButton active={activeTab === "students"} onClick={() => setActiveTab("students")} label="Directory" icon={Users} />
           </div>
@@ -218,23 +267,47 @@ export default function AdminPlacements() {
 
               {/* PLACEMENT LIST */}
               <Card className="bg-white/5 border-white/10">
-                <CardHeader><CardTitle className="text-white text-lg">Recent Placements</CardTitle></CardHeader>
+                <CardHeader><CardTitle className="text-white text-lg">Active Drives & Applications</CardTitle></CardHeader>
                 <CardContent className="space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
                   {placements.map((p, i) => (
                     <div key={i} className="flex justify-between items-center p-3 bg-black/40 rounded-lg border border-white/5">
                       <div>
                         <p className="font-semibold text-white">{p.company}</p>
-                        <p className="text-xs text-gray-400">{p.roles.length} Roles • {p.domains.slice(0, 2).join(", ")}</p>
+                        <p className="text-xs text-gray-400">Eligibility: {p.eligibility || "N/A"}</p>
+                        <p className="text-xs text-cyan-400">Deadline: {p.deadline || "N/A"}</p>
                       </div>
                       <div className="text-right">
-                        <span className="text-xl font-bold text-green-400">{p.totalHires}</span>
-                        <p className="text-[10px] text-gray-500 uppercase">Hires</p>
+                        <Button variant="outline" size="sm" onClick={() => loadApplicants(p.company)} className="text-[10px] h-7">View Applicants</Button>
                       </div>
                     </div>
                   ))}
                 </CardContent>
               </Card>
             </div>
+
+            {/* APPLICANT MODAL / OVERLAY */}
+            {viewingApplicantsFor && (
+              <Card className="bg-gray-900 border-purple-500/50 mt-6">
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="text-white">Applicants for {viewingApplicantsFor}</CardTitle>
+                  <Button variant="ghost" size="sm" onClick={() => setViewingApplicantsFor(null)}>Close</Button>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {selectedDriveApplicants.length === 0 ? (
+                      <p className="text-gray-500 text-center py-4">No applications yet.</p>
+                    ) : (
+                      selectedDriveApplicants.map((app, idx) => (
+                        <div key={idx} className="flex justify-between p-2 bg-black/20 border border-white/5 rounded">
+                          <span className="text-sm text-white">{app.email}</span>
+                          <span className="text-xs text-green-400">{app.status || "Applied"}</span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         )}
 
@@ -295,6 +368,40 @@ export default function AdminPlacements() {
               </div>
             </CardContent>
           </Card>
+        )}
+        {/* === TAB 4: DRIVE MANAGEMENT === */}
+        {activeTab === "drives" && (
+          <div className="flex justify-center">
+            <Card className="bg-white/5 border-white/10 h-fit w-full max-w-2xl">
+              <CardHeader><CardTitle className="text-white text-lg flex items-center gap-2"><TrendingUp size={18} /> Plan Upcoming Drive</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <Input placeholder="Company Name" value={newDrive.company} onChange={e => setNewDrive({ ...newDrive, company: e.target.value })} className="bg-black/40 border-white/20 text-white" />
+                  <Input placeholder="Total Hires (Expected)" type="number" value={newDrive.totalHires} onChange={e => setNewDrive({ ...newDrive, totalHires: parseInt(e.target.value) || 0 })} className="bg-black/40 border-white/20 text-white" />
+                </div>
+                <Input placeholder="Roles (e.g. SDE-1, QA)" value={newDrive.roles.join(", ")} onChange={e => setNewDrive({ ...newDrive, roles: e.target.value.split(",").map(sx => sx.trim()) })} className="bg-black/40 border-white/20 text-white" />
+                <Input placeholder="Domains (e.g. Web, Cloud)" value={newDrive.domains.join(", ")} onChange={e => setNewDrive({ ...newDrive, domains: e.target.value.split(",").map(sx => sx.trim()) })} className="bg-black/40 border-white/20 text-white" />
+
+                <div className="grid grid-cols-2 gap-4 pt-2 border-t border-white/5">
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-gray-500 uppercase ml-1">Eligibility Criteria</label>
+                    <Input placeholder="e.g. 7.5+ CGPA, No Backlogs" value={newDrive.eligibility} onChange={e => setNewDrive({ ...newDrive, eligibility: e.target.value })} className="bg-black/40 border-white/20 text-white" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-gray-500 uppercase ml-1">Reg. Deadline</label>
+                    <Input type="date" value={newDrive.deadline} onChange={e => setNewDrive({ ...newDrive, deadline: e.target.value })} className="bg-black/40 border-white/20 text-white" />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] text-gray-500 uppercase ml-1">Drive Date</label>
+                  <Input type="date" value={newDrive.drive_date} onChange={e => setNewDrive({ ...newDrive, drive_date: e.target.value })} className="bg-black/40 border-white/20 text-white" />
+                </div>
+
+                <Button onClick={handlePostDrive} className="w-full bg-gradient-to-r from-purple-500 to-cyan-500 mt-4">Broadcast Drive to Students</Button>
+              </CardContent>
+            </Card>
+          </div>
         )}
 
       </div>

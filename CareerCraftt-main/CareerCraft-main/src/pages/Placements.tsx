@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   BarChart,
   Bar,
@@ -9,60 +11,73 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
 
 type Placement = {
   company: string;
   totalHires: number;
   domains: string[];
   roles: string[];
+  eligibility?: string;
+  deadline?: string;
+  drive_date?: string;
 };
 
-const COLLEGES = [
-  "Anurag University",
-  "BITS Pilani, Hyderabad Campus",
-  "BV Raju Institute of Technology (BVRIT)",
-  "Chaitanya Bharathi Institute of Technology (CBIT)",
-  "Gokaraju Rangaraju Institute of Engineering and Technology (GRIET)",
-  "IIIT Hyderabad",
-  "IIT Hyderabad",
-  "Institute of Aeronautical Engineering (IARE)",
-  "JNTU Hyderabad",
-  "Mahindra University",
-  "Malla Reddy College of Engineering",
-  "Methodist College of Engineering and Technology",
-  "Muffakham Jah College of Engineering and Technology",
-  "Narayanamma Institute of Technology and Science",
-  "Osmania University",
-  "Sreenidhi Institute of Science and Technology (SNIST)",
-  "University of Hyderabad (HCU)",
-  "Vardhaman College of Engineering",
-  "Vasavi College of Engineering",
-  "VNR Vignana Jyothi Institute of Engineering and Technology",
-  "Woxsen University",
-];
 
 export default function Placements() {
-  const [college, setCollege] = useState("Anurag University");
+  const [college, setCollege] = useState(localStorage.getItem("college") || "");
   const [placementsData, setPlacementsData] = useState<Placement[]>([]);
   const [loading, setLoading] = useState(false);
+  const [checkingProfile, setCheckingProfile] = useState(true);
+  const [studentProfile, setStudentProfile] = useState<any>(null);
+  const [appliedDrives, setAppliedDrives] = useState<string[]>([]);
+
+
 
   useEffect(() => {
     // 🆕 Check if user has a stored college
     const storedCollege = localStorage.getItem("college");
-    if (storedCollege && COLLEGES.includes(storedCollege)) {
+    if (storedCollege) {
       setCollege(storedCollege);
     }
+
+    // Load Student Profile
+    import("@/lib/firebase").then(async ({ auth, db }) => {
+      const { doc, getDoc } = await import("firebase/firestore");
+      auth.onAuthStateChanged(async (user) => {
+        if (user) {
+          const docRef = doc(db, "users", user.uid);
+          const snap = await getDoc(docRef);
+          if (snap.exists()) {
+            const profileData = snap.data();
+            console.log("👤 Student Profile Loaded:", profileData);
+            setStudentProfile(profileData);
+            if (profileData.college) {
+              console.log("🏛️ Setting College from Profile:", profileData.college);
+              setCollege(profileData.college);
+              localStorage.setItem("college", profileData.college); // Sync back to localStorage
+            }
+          }
+          setCheckingProfile(false);
+
+          // 🆕 Fetch applied drives from backend for persistence
+          try {
+            console.log("📡 Fetching applications for:", user.uid);
+            const appRes = await fetch(`http://localhost:8000/student/applications/${user.uid}`);
+            const appData = await appRes.json();
+            console.log("✅ Applied Drives:", appData);
+            setAppliedDrives(appData);
+          } catch (err) {
+            console.error("Failed to load applied drives", err);
+          }
+        }
+      });
+    });
   }, []);
 
   useEffect(() => {
     const loadPlacements = async () => {
+      if (!college) return;
+
       setLoading(true);
       try {
         const res = await fetch(
@@ -72,6 +87,7 @@ export default function Placements() {
         setPlacementsData(data);
       } catch (error) {
         console.error(error);
+        toast.error("Failed to load placements data.");
         setPlacementsData([]);
       } finally {
         setLoading(false);
@@ -81,65 +97,80 @@ export default function Placements() {
     loadPlacements();
   }, [college]);
 
+  const handleApply = async (company: string) => {
+    import("@/lib/firebase").then(async ({ auth }) => {
+      const user = auth.currentUser;
+      if (!user) return toast.error("Please login to apply");
+
+      try {
+        const res = await fetch("http://localhost:8000/placements/apply", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            uid: user.uid,
+            email: user.email,
+            college: college,
+            company: company
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          toast.success(data.message);
+          setAppliedDrives([...appliedDrives, company]);
+        } else {
+          toast.error(data.error);
+        }
+      } catch (err) {
+        toast.error("Failed to apply");
+      }
+    });
+  };
+
+  const checkEligibility = (eligibilityStr?: string) => {
+    if (!eligibilityStr || !studentProfile) return { eligible: true, reason: "" };
+
+    // Extract minimum CGPA from string (e.g., "7.5+ CGPA")
+    const cgpaMatch = eligibilityStr.match(/(\d+(\.\d+)?)/);
+    if (cgpaMatch && studentProfile.cgpa) {
+      const minCgpa = parseFloat(cgpaMatch[1]);
+      const studentCgpa = parseFloat(studentProfile.cgpa);
+      if (studentCgpa < minCgpa) {
+        return { eligible: false, reason: `Min ${minCgpa} CGPA required (You: ${studentCgpa})` };
+      }
+    }
+
+    // Branch check (simple string search)
+    if (studentProfile.branch && !eligibilityStr.toLowerCase().includes(studentProfile.branch.toLowerCase()) && eligibilityStr.toLowerCase().includes("branch")) {
+      // Only warn if the eligibility string explicitly mentions specific branches
+      // return { eligible: false, reason: `Branch not eligible` };
+    }
+
+    return { eligible: true, reason: "" };
+  };
+
   return (
     <div className="p-8 text-white space-y-10">
 
-      {/* TITLE */}
-      <div>
-        <h1 className="text-3xl font-bold text-purple-400">
-          College Placements
-        </h1>
-        <p className="text-white/60">Company-wise placement insights</p>
+      {/* COLLEGE TITLE */}
+      <div className="max-w-xs space-y-2">
+        <div className="p-4 rounded-lg bg-purple-500/10 border border-purple-500/20">
+          <p className="text-sm text-gray-400">Viewing Insights for</p>
+          <h2 className="text-xl font-bold text-white">{college}</h2>
+        </div>
       </div>
 
-      {/* COLLEGE SELECT OR TITLE */}
-      <div className="max-w-xs">
-        {localStorage.getItem("college") ? (
-          <div className="p-4 rounded-lg bg-purple-500/10 border border-purple-500/20">
-            <p className="text-sm text-gray-400">Viewing Insights for</p>
-            <h2 className="text-xl font-bold text-white">{college}</h2>
-          </div>
-        ) : (
-          <Select
-            value={college}
-            onValueChange={async (val) => {
-              setCollege(val);
-              // Save to localStorage immediately so UI updates
-              localStorage.setItem("college", val);
+      {/* LOADING STATES */}
+      {(loading || checkingProfile) && <p className="text-white/60">Loading placement data...</p>}
 
-              // 💾 Save to Backend if logged in
-              import("@/lib/firebase").then(async ({ auth }) => {
-                const user = auth.currentUser;
-                if (user) {
-                  const token = await user.getIdToken();
-                  await fetch("http://localhost:8000/update-college", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ token, college: val }),
-                  });
-                }
-              });
-            }}
-          >
-            <SelectTrigger className="border-gray-700 bg-gray-900/50">
-              <SelectValue placeholder="Select College" />
-            </SelectTrigger>
-            <SelectContent>
-              {COLLEGES.map((c) => (
-                <SelectItem key={c} value={c}>
-                  {c}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
-      </div>
+      {!loading && !checkingProfile && !college && (
+        <p className="text-white/60 bg-purple-500/5 p-4 rounded-lg border border-purple-500/10">
+          📍 Please ensure your college is set in your Profile to view placement insights.
+        </p>
+      )}
 
-      {loading && <p className="text-white/60">Loading placement data...</p>}
-
-      {!loading && placementsData.length === 0 && (
+      {!loading && !checkingProfile && college && placementsData.length === 0 && (
         <p className="text-white/60">
-          No placement data available for this college.
+          No placement data available for "{college}".
         </p>
       )}
 
@@ -181,15 +212,48 @@ export default function Placements() {
                   </span>
                 </p>
 
+                <div className="mt-3 py-2 border-y border-white/5 space-y-1">
+                  <p className="text-[10px] text-gray-500 uppercase font-bold">Eligibility</p>
+                  <p className="text-sm text-gray-200">{item.eligibility || "Open for all"}</p>
+
+                  <p className="text-[10px] text-red-400 uppercase font-bold mt-2">Deadline</p>
+                  <p className="text-sm text-red-300 font-semibold">{item.deadline ? new Date(item.deadline).toLocaleDateString() : "Not set"}</p>
+                </div>
+
                 <div className="mt-4">
-                  <p className="text-sm text-white/70 mb-1">Expected Domains:</p>
+                  <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Expected Domains:</p>
                   <div className="flex flex-wrap gap-2">
                     {item.domains.map((domain) => (
-                      <Badge key={domain} variant="secondary">
+                      <Badge key={domain} variant="secondary" className="bg-white/5 text-[10px]">
                         {domain}
                       </Badge>
                     ))}
                   </div>
+                </div>
+
+                {/* APPLY BUTTON */}
+                <div className="mt-6">
+                  {appliedDrives.includes(item.company) ? (
+                    <Button className="w-full bg-green-600/20 text-green-400 border border-green-600/50 cursor-default" disabled>
+                      Applied Successfully ✅
+                    </Button>
+                  ) : (
+                    (() => {
+                      const { eligible, reason } = checkEligibility(item.eligibility);
+                      return (
+                        <div className="space-y-2">
+                          <Button
+                            className={`w-full ${eligible ? "bg-purple-600 hover:bg-purple-700" : "bg-gray-800 text-gray-500 cursor-not-allowed"}`}
+                            disabled={!eligible}
+                            onClick={() => handleApply(item.company)}
+                          >
+                            {eligible ? "Register for Drive" : "Not Eligible"}
+                          </Button>
+                          {!eligible && <p className="text-[10px] text-red-500 text-center">{reason}</p>}
+                        </div>
+                      );
+                    })()
+                  )}
                 </div>
 
                 <div className="mt-4">

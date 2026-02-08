@@ -13,6 +13,10 @@ interface ProfileData {
   linkedin: string;
   targetRole: string;
   photoURL?: string;
+  cgpa?: string;
+  branch?: string;
+  batch?: string;
+  backlogs?: string;
 }
 
 const Profile = () => {
@@ -26,7 +30,11 @@ const Profile = () => {
     github: "",
     linkedin: "",
     targetRole: "",
-    photoURL: ""
+    photoURL: "",
+    cgpa: "",
+    branch: "",
+    batch: "",
+    backlogs: "0"
   });
 
   /* =========================
@@ -261,6 +269,56 @@ const Profile = () => {
                       setProfile({ ...profile, targetRole: e.target.value })
                     }
                   />
+                </div>
+
+                {/* Academic Fields */}
+                <div className="md:col-span-2 pt-4 border-t border-gray-800/50">
+                  <h3 className="text-lg font-semibold text-purple-400 mb-4">Academic Details (Required for Placements)</h3>
+                  <div className="grid md:grid-cols-4 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-xs text-gray-500 ml-1">Current CGPA</label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        className="bg-[#0B1120] border-gray-800 focus:border-purple-500/50 text-gray-200 h-10 rounded-lg"
+                        value={profile.cgpa}
+                        disabled={!isEditing}
+                        placeholder="0.00"
+                        onChange={(e) => setProfile({ ...profile, cgpa: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs text-gray-500 ml-1">Branch</label>
+                      <Input
+                        className="bg-[#0B1120] border-gray-800 focus:border-purple-500/50 text-gray-200 h-10 rounded-lg"
+                        value={profile.branch}
+                        disabled={!isEditing}
+                        placeholder="e.g. CSE"
+                        onChange={(e) => setProfile({ ...profile, branch: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs text-gray-500 ml-1">Batch / Year</label>
+                      <Input
+                        className="bg-[#0B1120] border-gray-800 focus:border-purple-500/50 text-gray-200 h-10 rounded-lg"
+                        value={profile.batch}
+                        disabled={!isEditing}
+                        placeholder="e.g. 2024"
+                        onChange={(e) => setProfile({ ...profile, batch: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs text-gray-500 ml-1">Active Backlogs</label>
+                      <Input
+                        type="number"
+                        className="bg-[#0B1120] border-gray-800 focus:border-purple-500/50 text-gray-200 h-10 rounded-lg"
+                        value={profile.backlogs}
+                        disabled={!isEditing}
+                        placeholder="0"
+                        onChange={(e) => setProfile({ ...profile, backlogs: e.target.value })}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 

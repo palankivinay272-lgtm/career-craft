@@ -9,10 +9,14 @@ def seed_admins():
 
     admins = [
         {"username": "admin_iitb", "password": "password123", "college": "IIT Bombay"},
-        {"username": "admin_iitd", "password": "password123", "college": "IIT Delhi"},
+        {"username": "admin_anurag", "password": "password123", "college": "Anurag University"},
+        {"username": "admin_vnrvjiet", "password": "password123", "college": "VNR Vignana Jyothi Institute of Engineering and Technology"},
+        {"username": "admin_bits", "password": "password123", "college": "BITS Pilani, Hyderabad Campus"},
+        {"username": "admin_cbit", "password": "password123", "college": "Chaitanya Bharathi Institute of Technology (CBIT)"},
+        {"username": "admin_mallareddy", "password": "password123", "college": "Mallareddy Engineering College"},
+        {"username": "admin_iith", "password": "password123", "college": "IIT Hyderabad"},
+        {"username": "admin_iiith", "password": "password123", "college": "IIIT Hyderabad"},
         {"username": "admin_nitw", "password": "password123", "college": "NIT Warangal"},
-        {"username": "admin_abc", "password": "password123", "college": "ABC College"},
-        {"username": "admin_xyz", "password": "password123", "college": "XYZ University"},
     ]
 
     print("🚀 Seeding Placement Officers...")

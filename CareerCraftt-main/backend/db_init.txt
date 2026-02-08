@@ -21,3 +21,50 @@
 ✅ Firebase Admin Initialized
 ✅ Firebase Admin Initialized
 ✅ Firebase Admin Initialized
+⚠️ serviceAccountKey.json not found.
+⚠️ serviceAccountKey.json not found.
+⚠️ serviceAccountKey.json not found. Using MOCK DATA for Database operations.
+⚠️ serviceAccountKey.json not found. Using MOCK DATA for Database operations.
+⚠️ serviceAccountKey.json not found. Using MOCK DATA for Database operations.
+⚠️ serviceAccountKey.json not found. Using MOCK DATA for Database operations.
+⚠️ serviceAccountKey.json not found. Using MOCK DATA for Database operations.
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized
+✅ Firebase Admin Initialized

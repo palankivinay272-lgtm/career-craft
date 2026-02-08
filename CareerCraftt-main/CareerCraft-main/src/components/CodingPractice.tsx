@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -238,12 +239,12 @@ const CodingPractice = () => {
                     details: [],
                     runtime: "0ms"
                 });
-                alert(`Error: ${data.detail || data.error || "Unknown error occurred"}`);
+                toast.error(`Error: ${data.detail || data.error || "Unknown error occurred"}`);
             }
 
         } catch (error) {
             console.error("Execution failed:", error);
-            alert("Failed to connect to the execution server. Ensure backend is running.");
+            toast.error("Failed to connect to the execution server. Ensure backend is running.");
         } finally {
             setIsRunning(false);
         }

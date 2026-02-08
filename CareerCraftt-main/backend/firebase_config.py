@@ -20,7 +20,7 @@ if os.path.exists(cred_path):
             f.write(f"❌ Failed to initialize Firebase Admin: {e}\n")
 else:
     with open("db_init.txt", "a", encoding="utf-8") as f:
-        f.write("⚠️ serviceAccountKey.json not found.\n")
+        f.write("⚠️ serviceAccountKey.json not found. Using MOCK DATA for Database operations.\n")
 
 class FirebaseClient:
     def __init__(self):

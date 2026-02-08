@@ -63,7 +63,7 @@ export default function Login() {
       /* ===============================
          1️⃣ TRY ADMIN LOGIN FIRST
       =============================== */
-      const adminRes = await fetch("http://127.0.0.1:8000/admin/login", {
+      const adminRes = await fetch("http://localhost:8000/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -115,11 +115,14 @@ export default function Login() {
           body: JSON.stringify({ token }),
         });
         const data = await res.json();
+        console.log("🔹 Backend Verify Data:", data);
 
         if (data.college) {
-          localStorage.setItem("college", data.college); // 🆕 Save fetched college
+          console.log("✅ Setting College:", data.college);
+          localStorage.setItem("college", data.college);
         } else {
-          localStorage.removeItem("college"); // Clear if no college associated
+          console.log("⚠️ No college found in backend for this user");
+          localStorage.removeItem("college");
         }
 
       } catch (err) {

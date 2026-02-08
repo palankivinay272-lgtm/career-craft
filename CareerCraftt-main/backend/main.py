@@ -27,6 +27,10 @@ from pdfminer.high_level import extract_text as pdf_extract_text
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
 # ---------------- LOGGING ----------------
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 logger = logging.getLogger(__name__)
@@ -77,6 +81,27 @@ and navigation around the platform. Keep answers concise, professional, and enco
 """
 
 app = FastAPI()
+
+def normalize_college_name(name: str) -> str:
+    """
+    Standardizes college names using a common alias map.
+    Maps nicknames like 'nit trichy' to canonical names.
+    """
+    if not name: return name
+    alias_map = {
+        "lpu": "Lovely Professional University",
+        "lpu university": "Lovely Professional University",
+        "iit bombay": "IIT Bombay",
+        "iit delhi": "IIT Delhi",
+        "nit trichy": "National Institute of Technology (NIT) Trichy",
+        "nit-trichy": "National Institute of Technology (NIT) Trichy",
+        "malla reddy": "Mallareddy Engineering College",
+        "malla reddy college": "Mallareddy Engineering College",
+        "malla reddy college of engineering": "Mallareddy Engineering College",
+        "mallareddy college of engineering": "Mallareddy Engineering College",
+    }
+    normalized_input = name.lower().strip()
+    return alias_map.get(normalized_input, name)
 
 # ---------------- CORS ----------------
 app.add_middleware(
@@ -167,6 +192,9 @@ class AdminPlacement(BaseModel):
     totalHires: int
     domains: list[str]
     roles: list[str]
+    eligibility: str = "TBD"
+    deadline: str = "TBD"
+    drive_date: str = "TBD"
 
 class JobSchema(BaseModel):
     role: str
@@ -324,6 +352,8 @@ PLACEMENTS_DB = {
     "IIT Hyderabad": get_tier1_companies(),
     "BITS Pilani, Hyderabad Campus": get_tier1_companies(),
     "University of Hyderabad (HCU)": get_tier1_companies(),
+    "National Institute of Technology (NIT) Trichy": get_tier1_companies(),
+    "NIT Trichy": get_tier1_companies(),
 
     # Tier 2
     "JNTU Hyderabad": get_tier2_companies(),
@@ -338,7 +368,7 @@ PLACEMENTS_DB = {
     "Gokaraju Rangaraju Institute of Engineering and Technology (GRIET)": get_tier3_companies(),
     "Institute of Aeronautical Engineering (IARE)": get_tier3_companies(),
     "Mahindra University": get_tier3_companies(), # Could be Tier 2, treating as 3 for now or upgrade later
-    "Malla Reddy College of Engineering": get_tier3_companies(),
+    "Mallareddy Engineering College": get_tier3_companies(),
     "Methodist College of Engineering and Technology": get_tier3_companies(),
     "Muffakham Jah College of Engineering and Technology": get_tier3_companies(),
     "Narayanamma Institute of Technology and Science": get_tier3_companies(),
@@ -424,41 +454,124 @@ def delete_placement(college: str, index: int):
         companies = data.get("companies", [])
         if 0 <= index < len(companies):
             del companies[index]
-            doc_ref.update({"companies": companies})
-            return {"message": "Deleted from Firestore"}
-            
-    return {"error": "Not found"}
-
+    
 @app.get("/placements/{college}")
 def get_placements(college: str):
     from firebase_config import firebase_client
     db = firebase_client.db
     
+    search_key = normalize_college_name(college)
+    
     # 1. Fallback if DB not connected
     if not db:
-        return PLACEMENTS_DB.get(college, [])
+        return PLACEMENTS_DB.get(search_key, [])
         
-    doc_ref = db.collection("placements").document(college)
+    doc_ref = db.collection("placements").document(search_key)
     doc = doc_ref.get()
     
-    # 2. Return from DB if exists
+    # 2. Return from DB if exists and has data
     if doc.exists:
-        data = doc.to_dict()
-        if data and "companies" in data and len(data["companies"]) > 0:
-             return data["companies"]
-
-    # 3. AUTO-SEED: If not in DB (or empty), save local data to DB
-    print(f"⚡ Seeding Firestore with data for {college}...")
-    local_data = PLACEMENTS_DB.get(college, [])
-    
-    if local_data:
-        try:
-            doc_ref.set({"companies": local_data}, merge=True)
-            print("✅ Seeding Complete")
-        except Exception as e:
-            print(f"❌ Seeding Failed: {e}")
+        companies = doc.to_dict().get("companies", [])
+        if companies:
+            return companies
             
-    return local_data
+    # 3. Fallback to PLACEMENTS_DB if Firestore empty or missing
+    # Try with search_key
+    data = PLACEMENTS_DB.get(search_key)
+    if not data:
+        # Case-insensitive match in PLACEMENTS_DB
+        for k in PLACEMENTS_DB.keys():
+            if k.lower() == search_key.lower() or k.lower() == college.lower().strip():
+                data = PLACEMENTS_DB[k]
+                break
+                
+    return data if data else []
+
+# ---------------- PLACEMENT APPLICATIONS ----------------
+class PlacementApplyRequest(BaseModel):
+    uid: str
+    college: str
+    company: str
+    email: str
+
+@app.post("/placements/apply")
+def apply_placement(data: PlacementApplyRequest):
+    """
+    Saves a student's application for a specific placement drive.
+    """
+    from firebase_config import firebase_client
+    from firebase_admin import firestore
+    
+    fs_db = firebase_client.db
+    if not fs_db:
+        return {"error": "DB not initialized"}
+        
+    try:
+        # Save to registrations/{college}/{company}/{uid}
+        reg_ref = fs_db.collection("registrations")\
+            .document(data.college)\
+            .collection(data.company)\
+            .document(data.uid)
+            
+        reg_ref.set({
+            "uid": data.uid,
+            "email": data.email,
+            "timestamp": firestore.SERVER_TIMESTAMP,
+            "status": "Applied"
+        })
+        
+        # 🆕 Also update the user's profile to track applied drives for persistence
+        user_ref = fs_db.collection("users").document(data.uid)
+        user_ref.update({
+            "appliedDrives": firestore.ArrayUnion([data.company])
+        })
+        
+        return {"success": True, "message": f"Applied for {data.company} successfully!"}
+    except Exception as e:
+        print(f"Error applying for placement: {e}")
+        return {"error": str(e)}
+
+@app.get("/admin/applications/{college}/{company}")
+def get_placement_applications(college: str, company: str):
+    """
+    Fetches the list of students who applied for a specific company drive.
+    """
+    from firebase_config import firebase_client
+    fs_db = firebase_client.db
+    if not fs_db:
+        return []
+        
+    try:
+        apps_ref = fs_db.collection("registrations")\
+            .document(college)\
+            .collection(company)
+            
+        docs = apps_ref.stream()
+        applicants = []
+        for doc in docs:
+            applicants.append(doc.to_dict())
+            
+        return applicants
+    except Exception as e:
+        print(f"Error fetching applications: {e}")
+        return []
+
+@app.get("/student/applications/{uid}")
+def get_user_applications(uid: str):
+    """
+    Checks which placements a student has already applied for.
+    Note: For a simple implementation, we might just query the registrations.
+    However, Firestore doesn't support easy collection group queries without indexes.
+    Alternative: Store applied_drives in user document.
+    """
+    from firebase_config import firebase_client
+    fs_db = firebase_client.db
+    if not fs_db: return []
+    
+    doc = fs_db.collection("users").document(uid).get()
+    if doc.exists:
+        return doc.to_dict().get("appliedDrives", [])
+    return []
 
 # ---------------- HELPERS ----------------
 # ---------------- HELPERS ----------------
@@ -724,10 +837,14 @@ def verify_user(data: TokenSchema, db: Session = Depends(get_db)):
                 "uid": uid,
                 "lastLogin": firestore.SERVER_TIMESTAMP
             }
-            # Only update college if it's provided (e.g., during signup)
+            
+            # [NEW] Normalization logic for aliases
+            # Normalize before saving ONLY if provided
             if data.college:
-                user_data["college"] = data.college
-                stored_college = data.college # Use the new one if provided
+                stored_college = normalize_college_name(data.college)
+            
+            # Ensure we don't overwrite if we have a stored value
+            user_data["college"] = stored_college
                 
             user_ref.set(user_data, merge=True)
             logger.info(f"Synced user {email} to Firestore (College: {stored_college})")
@@ -745,41 +862,40 @@ def verify_user(data: TokenSchema, db: Session = Depends(get_db)):
 
     except Exception as e:
         logger.error(f"Failed to sync user to Firestore: {e}")
-    # ------------------------------------------------
 
-    
-    return {
-        "success": True, 
-        "user": email.split("@")[0], 
-        "email": email,
-        "college": stored_college
-    }
+    return {"success": True, "email": email, "uid": uid, "college": stored_college}
 
 @app.post("/update-college")
-def update_college(data: TokenSchema):
+async def update_college(data: dict):
     from firebase_config import firebase_client
-    from firebase_admin import firestore
+    token = data.get("token")
+    college = data.get("college")
     
-    decoded_token = firebase_client.verify_token(data.token)
-    if not decoded_token:
-        # Dev fallback
-        if data.token == "dev-token":
-            return {"success": True, "message": "Dev updated"}
-        return JSONResponse(status_code=401, content={"success": False, "message": "Invalid Token"})
+    if not token or not college:
+        # Try Pydantic schema keys if dict keys missing
+        token = data.get("token")
+        college = data.get("college")
 
-    uid = decoded_token.get("uid")
-    fs_db = firebase_client.db
-    
-    if fs_db:
-        try:
-            fs_db.collection("users").document(uid).set({
-                "college": data.college
-            }, merge=True)
-            return {"success": True, "message": "College updated"}
-        except Exception as e:
-            return JSONResponse(status_code=500, content={"error": str(e)})
+    if not token or not college:
+        return JSONResponse(status_code=400, content={"message": "Missing token or college"})
+        
+    try:
+        decoded_token = firebase_client.auth.verify_id_token(token)
+        uid = decoded_token.get("uid")
+        
+        fs_db = firebase_client.db
+        if fs_db:
+            # Normalize before saving
+            normalized_college = normalize_college_name(college)
             
-    return {"success": False, "message": "DB not initialized"}
+            fs_db.collection("users").document(uid).update({"college": normalized_college})
+            logger.info(f"Updated user {uid} college to {normalized_college}")
+            return {"success": True, "college": normalized_college}
+    except Exception as e:
+        logger.error(f"Failed to update college: {e}")
+        return JSONResponse(status_code=500, content={"message": str(e)})
+    
+    return {"success": False}
 
 @app.post("/forgot-password")
 async def forgot_password(request: dict):
@@ -1131,7 +1247,7 @@ def extract_roles_from_resume(resume_text):
     if not final_roles:
         return ["Software Engineer"]
         
-    return final_roles[:3]
+    return final_roles[:5]
 
 @app.get("/job-matches/{uid}")
 def job_matches(uid: str):
@@ -1151,8 +1267,15 @@ def job_matches(uid: str):
             print(f"✅ DEBUG: Found resume text. Length: {len(resume_text)}")
         else:
             print(f"❌ DEBUG: User document not found for UID: {uid}")
+            data = None # Explicitly set None
     else:
-        print("❌ DEBUG: Firestore DB not initialized")
+        print("⚠️ DEBUG: Firestore DB not initialized. Using Mock Data for Resume.")
+        # MOCK DATA FOR DEMO
+        data = {
+            "resume_text": "",
+            "college": "LPU", # Mock College to trigger Placement Jobs
+            "xp": 120
+        }
     
     # If no resume text found, use empty string (matches will be 0%)
     if not resume_text:
@@ -1173,67 +1296,7 @@ def job_matches(uid: str):
         jobs_data = JOBS_DB.copy() # Use copy to avoid mutating original
         print("⚠️ DEBUG: Using Fallback JOBS_DB")
 
-    # 3. [NEW] Inject PLACEMENT Jobs if User has a College
-    # Ensure 'data' exists (it typically does if resume_text was found, but be safe)
-    user_college = data.get("college") if 'data' in locals() and data else None
-    
-    if user_college:
-        print(f"🎓 DEBUG: User is from {user_college}. Looking for placements...")
-        
-        # 🩹 Normalize College Names (Handle Aliases & Case-Insensitivity)
-        # 1. Map known aliases
-        alias_map = {
-            "lpu": "Lovely Professional University",
-            "lpu university": "Lovely Professional University",
-            "iit bombay": "IIT Bombay",
-            "iit delhi": "IIT Delhi",
-            # Add more as needed
-        }
-        normalized_input = user_college.lower().strip()
-        
-        if normalized_input in alias_map:
-            user_college = alias_map[normalized_input]
-        
-        # 2. Case-Insensitive Lookup in PLACEMENTS_DB keys
-        # This ensures "iit bombay" matches "IIT Bombay" in the DB key
-        db_key = None
-        for key in PLACEMENTS_DB.keys():
-            if key.lower() == user_college.lower():
-                db_key = key
-                break
-        
-        # Use the matched DB key if found, otherwise keep original
-        search_key = db_key if db_key else user_college
-        
-        # Get placements (Firestore or Local)
-        placement_companies = []
-        if fs_db:
-            p_doc = fs_db.collection("placements").document(search_key).get()
-            if p_doc.exists:
-                placement_companies = p_doc.to_dict().get("companies", [])
-        
-        # Fallback to local if empty or no DB
-        if not placement_companies:
-            placement_companies = PLACEMENTS_DB.get(search_key, [])
-            
-        # Convert Placements to Jobs
-        for p in placement_companies:
-            # Create a job entry for each role
-            for role in p.get("roles", ["Graduate Trainee"]):
-                # Construct a "skill string" from domains
-                skill_str = " ".join(p.get("domains", [])).lower()
-                
-                jobs_data.append({
-                    "role": role,
-                    "company": p.get("company"),
-                    "skills": skill_str, # Use domains as skills for matching
-                    "location": f"On-Campus ({search_key})",
-                    "salary": "Placement Drive", # Special indicator
-                    "is_placement": True
-                })
-        print(f"✅ DEBUG: Added {len(placement_companies)} placement companies (from {search_key}) to matching pool")
 
-    
     # ---------------- JOB FETCHING & FILTERING ----------------
     
     # [NEW] AI Job Tracker (Expanded Sources)
@@ -1384,8 +1447,8 @@ def job_matches(uid: str):
         # Shuffle to randomize feed
         random.shuffle(top_companies)
         
-        # Select first 6 companies
-        selected_companies = top_companies[:6]
+        # Select first 10 companies (Increased for more results)
+        selected_companies = top_companies[:10]
 
         for idx, company in enumerate(selected_companies):
             # Rotate sources to ensure even distribution
@@ -1450,7 +1513,14 @@ def job_matches(uid: str):
         
         try:
             print(f"🌍 Fetching Live Jobs for '{role_query}'...")
-            resp = requests.get(url, headers=headers, timeout=5) # Reduced timeout
+            
+            # START ROBUST REQUEST LOGIC
+            session = requests.Session()
+            retries = Retry(total=2, backoff_factor=1, status_forcelist=[500, 502, 503, 504])
+            session.mount('https://', HTTPAdapter(max_retries=retries))
+            
+            resp = session.get(url, headers=headers, timeout=5) 
+            # END ROBUST REQUEST LOGIC
             
             if resp.status_code == 200:
                 data = resp.json()
@@ -1467,7 +1537,7 @@ def job_matches(uid: str):
                 # Date Threshold (Relaxed to 7 days for stability, strict 3 might be too empty for a demo)
                 # User asked for ~3 days, but if API has 4 day old jobs, we should probably show them rather than fallback to fake.
                 # Let's set to 5 days.
-                threshold_days = 5
+                threshold_days = 10
                 limit_date = datetime.datetime.now() - datetime.timedelta(days=threshold_days)
 
                 for j in all_jobs:
@@ -1514,8 +1584,13 @@ def job_matches(uid: str):
                 
             return real_jobs
             
+        except requests.exceptions.RequestException as e:
+            # Catch ALL network-related errors (DNS, Timeout, Connection Refused)
+            # Log as WARNING (not Error) to avoid panic
+            print(f"⚠️ RemoteOK API unreachable (Network/DNS). Switching to fallback simulation.")
+            return fetch_company_jobs(role_query)
         except Exception as e:
-            print(f"❌ RemoteOK Fetch Error: {e}. Switching to Fallback.")
+            print(f"⚠️ RemoteOK Fetch Error: {e}. Switching to Fallback.")
             # FALLBACK to the robust simulation if API fails
             return fetch_company_jobs(role_query)
 
@@ -1541,8 +1616,10 @@ def job_matches(uid: str):
     print(f"🔍 DEBUG: Extracted roles for search: {roles_to_gen}")
     
     for r in roles_to_gen:
-        # Use Real-Time API
+        # 1. Use Real-Time API (RemoteOK Live)
         jobs_data.extend(fetch_real_remote_jobs(r))
+        # 2. Add Multi-Platform Simulation (LinkedIn, Naukri, Indeed, Apna)
+        jobs_data.extend(fetch_company_jobs(r))
 
     results = []
     
@@ -1565,7 +1642,9 @@ def job_matches(uid: str):
             # Add LinkedIn Tracking fields
             "url": j.get("url", "#"), 
             "source": j.get("source", "CareerCraft"),
-            "posted_at": j.get("posted_at", None)
+            "posted_at": j.get("posted_at", None),
+            "eligibility": j.get("eligibility", "TBD"),
+            "deadline": j.get("deadline", "TBD")
         })
         
     # Sort by match score (Highest first)

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { toast } from "sonner";
 import Webcam from "react-webcam";
 import { Button } from "../components/ui/button";
 import { Loader2, Mic, Video, AlertCircle, Play, Square, ArrowRight, Volume2, Camera } from "lucide-react";
@@ -130,7 +131,7 @@ const VideoInterview = ({ initialDomain }: { initialDomain?: string }) => {
 
                 } catch (error) {
                     console.error(error);
-                    alert("Failed to load questions.");
+                    toast.error("Failed to load questions.");
                     setStep("setup");
                 } finally {
                     setLoading(false);
@@ -149,7 +150,7 @@ const VideoInterview = ({ initialDomain }: { initialDomain?: string }) => {
             stream.getTracks().forEach(track => track.stop());
         } catch (e) {
             console.error("Permission denied", e);
-            alert("Please allow camera and microphone access to proceed.");
+            toast.warning("Please allow camera and microphone access to proceed.");
         }
     };
 

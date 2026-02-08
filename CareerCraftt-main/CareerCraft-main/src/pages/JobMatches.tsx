@@ -15,6 +15,8 @@ interface Job {
   source?: string;  // "LinkedIn" or "CareerCraft"
   posted_at?: string; // ISO date
   description?: string; // Auto-generated or fetched
+  eligibility?: string;
+  deadline?: string;
 }
 
 const JobMatching = () => {
@@ -90,137 +92,76 @@ const JobMatching = () => {
             </p>
           </div>
         ) : (
-          <div className="space-y-12">
-
-            {/* SECTION 1: ON-CAMPUS DRIVES */}
-            {jobs.some(j => j.location?.includes("On-Campus")) && (
-              <div className="space-y-6 animate-in slide-in-from-left-4 fade-in duration-500">
-                <div className="flex items-center gap-3 border-b border-gray-800 pb-4">
-                  <Building className="text-yellow-400 h-6 w-6" />
-                  <div>
-                    <h2 className="text-2xl font-bold text-white">On-Campus Drives</h2>
-                    <p className="text-sm text-gray-400">Exclusive placement opportunities from your college</p>
-                  </div>
-                </div>
-
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {jobs.filter(j => j.location?.includes("On-Campus")).map((job, index) => (
-                    <div
-                      key={`placement-${index}`}
-                      className="group bg-gray-900/50 border border-yellow-500/20 rounded-xl p-6 hover:border-yellow-500/50 transition-all hover:shadow-lg hover:shadow-yellow-900/10 relative overflow-hidden"
-                    >
-                      <div className="absolute top-0 right-0 p-2 bg-yellow-500/10 rounded-bl-xl border-b border-l border-yellow-500/20 text-yellow-500 text-xs font-bold">
-                        CAMPUS DRIVE
-                      </div>
-
-                      <div className="flex justify-between items-start mb-4 mt-2">
-                        <div className="bg-gray-800 p-3 rounded-lg group-hover:bg-yellow-500/10 transition-colors">
-                          <Building size={24} className="text-yellow-400" />
-                        </div>
-                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                          {job.match}% Match
-                        </span>
-                      </div>
-
-                      <h2 className="text-xl font-semibold text-white mb-1">{job.role}</h2>
-                      <p className="text-gray-400 text-sm mb-4">{job.company}</p>
-
-                      <div className="space-y-2 text-sm text-gray-500 mb-6">
-                        <div className="flex items-center gap-2">
-                          <MapPin size={14} className="text-yellow-500" />
-                          <span className="text-gray-300">{job.location}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <DollarSign size={14} />
-                          {job.salary || "Placement Drive"}
-                        </div>
-                      </div>
-
-                      <Button
-                        className="w-full bg-gray-800 hover:bg-yellow-600 hover:text-black text-gray-300 transition-colors border border-gray-700 hover:border-yellow-500"
-                        onClick={() => handleOpenJob(job)}
-                      >
-                        View Details
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* SECTION 2: REGULAR RECOMMENDATIONS */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 border-b border-gray-800 pb-4">
-                <Briefcase className="text-emerald-400 h-6 w-6" />
-                <div>
-                  <h2 className="text-2xl font-bold text-white">Recommended Jobs</h2>
-                  <p className="text-sm text-gray-400">Fresh opportunities posted in the <b>last 3 days</b></p>
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {jobs.filter(j => !j.location?.includes("On-Campus")).map((job, index) => (
-                  <div
-                    key={`regular-${index}`}
-                    className="group bg-gray-900 border border-gray-800 rounded-xl p-6 hover:border-emerald-500/50 transition-all hover:shadow-lg hover:shadow-emerald-900/20"
-                  >
-                    <div className="flex justify-between items-start mb-4">
-                      <div className="bg-gray-800 p-3 rounded-lg group-hover:bg-emerald-500/10 transition-colors">
-                        <Building size={24} className="text-emerald-400" />
-                      </div>
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-bold ${job.match > 70
-                          ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                          : job.match > 40
-                            ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
-                            : "bg-red-500/20 text-red-400 border border-red-500/30"
-                          }`}
-                      >
-                        {job.match}% Match
-                      </span>
-                    </div>
-
-                    <div className="flex justify-between items-start mb-1">
-                      <h2 className="text-xl font-semibold text-white">
-                        {job.role}
-                      </h2>
-                      {job.source && job.source !== "CareerCraft" && (
-                        <span className={`text-[10px] px-2 py-0.5 rounded uppercase font-bold tracking-wider border ${job.source === "LinkedIn" ? "bg-[#0077b5]/20 text-[#0077b5] border-[#0077b5]/30"
-                          : job.source === "Indeed" ? "bg-[#2164f3]/20 text-[#2164f3] border-[#2164f3]/30"
-                            : job.source === "Naukri" ? "bg-[#FF7555]/20 text-[#FF7555] border-[#FF7555]/30"
-                              : job.source === "Glassdoor" ? "bg-[#0CAA41]/20 text-[#0CAA41] border-[#0CAA41]/30"
-                                : job.source === "Apna" ? "bg-[#be5cff]/20 text-[#be5cff] border-[#be5cff]/30"
-                                  : job.source === "Official Site" ? "bg-purple-500/20 text-purple-400 border-purple-500/30"
-                                    : "bg-gray-500/20 text-gray-400 border-gray-500/30"
-                          }`}>
-                          {job.source}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-gray-400 text-sm mb-4">{job.company}</p>
-
-                    <div className="space-y-2 text-sm text-gray-500 mb-6">
-                      <div className="flex items-center gap-2">
-                        <MapPin size={14} />
-                        {job.location || "Remote"}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <DollarSign size={14} />
-                        {job.salary || "Competitive Salary"}
-                      </div>
-                    </div>
-
-                    <Button
-                      className="w-full bg-gray-800 hover:bg-emerald-600 hover:text-white text-gray-300 transition-colors border border-gray-700"
-                      onClick={() => handleOpenJob(job)}
-                    >
-                      View Details
-                    </Button>
-                  </div>
-                ))}
+          <div className="space-y-6">
+            <div className="flex items-center gap-3 border-b border-gray-800 pb-4">
+              <Briefcase className="text-emerald-400 h-6 w-6" />
+              <div>
+                <h2 className="text-2xl font-bold text-white">Recommended Jobs</h2>
+                <p className="text-sm text-gray-400">Fresh opportunities posted in the <b>last 3 days</b></p>
               </div>
             </div>
 
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {jobs.map((job, index) => (
+                <div
+                  key={`job-${index}`}
+                  className="group bg-gray-900 border border-gray-800 rounded-xl p-6 hover:border-emerald-500/50 transition-all hover:shadow-lg hover:shadow-emerald-900/20"
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="bg-gray-800 p-3 rounded-lg group-hover:bg-emerald-500/10 transition-colors">
+                      <Building size={24} className="text-emerald-400" />
+                    </div>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-bold ${job.match > 70
+                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                        : job.match > 40
+                          ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
+                          : "bg-red-500/20 text-red-400 border border-red-500/30"
+                        }`}
+                    >
+                      {job.match}% Match
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-start mb-1">
+                    <h2 className="text-xl font-semibold text-white">
+                      {job.role}
+                    </h2>
+                    {job.source && job.source !== "CareerCraft" && (
+                      <span className={`text-[10px] px-2 py-0.5 rounded uppercase font-bold tracking-wider border ${job.source === "LinkedIn" ? "bg-[#0077b5]/20 text-[#0077b5] border-[#0077b5]/30"
+                        : job.source === "Indeed" ? "bg-[#2164f3]/20 text-[#2164f3] border-[#2164f3]/30"
+                          : job.source === "Naukri" ? "bg-[#FF7555]/20 text-[#FF7555] border-[#FF7555]/30"
+                            : job.source === "Glassdoor" ? "bg-[#0CAA41]/20 text-[#0CAA41] border-[#0CAA41]/30"
+                              : job.source === "Apna" ? "bg-[#be5cff]/20 text-[#be5cff] border-[#be5cff]/30"
+                                : job.source === "Official Site" ? "bg-purple-500/20 text-purple-400 border-purple-500/30"
+                                  : "bg-gray-500/20 text-gray-400 border-gray-500/30"
+                        }`}>
+                        {job.source}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-gray-400 text-sm mb-4">{job.company}</p>
+
+                  <div className="space-y-2 text-sm text-gray-500 mb-6">
+                    <div className="flex items-center gap-2">
+                      <MapPin size={14} />
+                      {job.location || "Remote"}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <DollarSign size={14} />
+                      {job.salary || "Competitive Salary"}
+                    </div>
+                  </div>
+
+                  <Button
+                    className="w-full bg-gray-800 hover:bg-emerald-600 hover:text-white text-gray-300 transition-colors border border-gray-700"
+                    onClick={() => handleOpenJob(job)}
+                  >
+                    View Details
+                  </Button>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -284,8 +225,14 @@ const JobMatching = () => {
                   <ul className="text-sm text-gray-400 space-y-2">
                     <li className="flex gap-2"><CheckCircle2 size={16} className="text-emerald-500" /> 3+ years of experience in related field</li>
                     <li className="flex gap-2"><CheckCircle2 size={16} className="text-emerald-500" /> Strong problem-solving skills</li>
-                    <li className="flex gap-2"><CheckCircle2 size={16} className="text-emerald-500" /> Experience with Agile methodologies</li>
+                    {selectedJob.eligibility && <li className="flex gap-2 font-bold text-yellow-500"><CheckCircle2 size={16} /> Eligibility: {selectedJob.eligibility}</li>}
                   </ul>
+                  {selectedJob.deadline && (
+                    <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                      <p className="text-xs text-red-400 uppercase font-bold">Registration Deadline</p>
+                      <p className="text-sm text-red-300">{new Date(selectedJob.deadline).toLocaleDateString()}</p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex gap-3">

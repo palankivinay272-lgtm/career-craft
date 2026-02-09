@@ -47,8 +47,7 @@ const MockInterview = () => {
                 <div className="space-y-2">
                   <h3 className="text-2xl font-bold text-white">Text-Based Mock Interview</h3>
                   <p className="text-gray-400">
-<<<<<<< HEAD
-                    Practice technical questions with multiple-choice options and instant feedback.
+                    Test your knowledge across 10+ domains including AI, Web Dev, and DSA.
                   </p>
                 </div>
 
@@ -57,11 +56,6 @@ const MockInterview = () => {
                     Start Text Quiz
                   </Button>
                 </div>
-=======
-                    Test your knowledge across 10+ domains including AI, Web Dev, and DSA.
-                  </p>
-                </div>
->>>>>>> 31bd55e66910435edfd8ff0e17b1dcf7c6ea6bdb
               </div>
             </Card>
 
@@ -82,22 +76,18 @@ const MockInterview = () => {
                 <div className="space-y-2">
                   <h3 className="text-2xl font-bold text-white">Video Interview Prep</h3>
                   <p className="text-gray-400">
-<<<<<<< HEAD
                     Simulate a real video interview with AI-driven speech analysis and feedback.
-=======
-                    Experience a real-time AI interview with speech-to-text questions.
->>>>>>> 31bd55e66910435edfd8ff0e17b1dcf7c6ea6bdb
                   </p>
                 </div>
-              </div>
-            </Card>
 
-<<<<<<< HEAD
                 <div className="w-full pt-4">
                   <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-6 text-lg rounded-xl">
                     Start Video Prep
                   </Button>
-=======
+                </div>
+              </div>
+            </Card>
+
             {/* 3. Coding Practice Card (NEW) */}
             <Card
               onClick={() => setMode("coding")}

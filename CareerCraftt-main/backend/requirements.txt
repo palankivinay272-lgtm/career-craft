@@ -8,7 +8,7 @@ spacy
 numpy
 python-docx
 pypdf
-google-genai
+google-generativeai
 requests
 python-dotenv
 googlesearch-python
